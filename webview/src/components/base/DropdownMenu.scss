@@ -1,0 +1,69 @@
+.rrDropdownMenuHost {
+  position: relative;
+}
+
+.rrDropdownMenuBtnSuffix {
+  display: inline-flex;
+  align-items: center;
+}
+
+.rrDropdownMenu {
+  --rr-dropdown-border-color: var(--vscode-menu-border, var(--vscode-widget-border, var(--vscode-panel-border, var(--rr-input-border))));
+  --rr-popover-arrow-border-color: var(--rr-dropdown-border-color);
+  --rr-popover-arrow-fill-color: var(--vscode-menu-background, var(--rr-menu-background));
+  position: fixed;
+  z-index: 2000;
+  min-width: 220px;
+  width: max-content;
+  max-width: calc(100vw - 16px);
+  background: var(--vscode-menu-background, var(--rr-menu-background));
+  color: var(--vscode-menu-foreground, var(--rr-menu-foreground));
+  border: 1px solid var(--rr-dropdown-border-color);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.rrDropdownMenu__body {
+  max-height: min(360px, calc(100vh - 24px));
+  overflow: auto;
+}
+
+.rrDropdownMenu__title {
+  font-size: 12px;
+  opacity: 0.85;
+  margin-bottom: 8px;
+}
+
+.rrDropdownMenu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.rrDropdownMenu__item input[type='radio'] {
+  pointer-events: none;
+}
+
+.rrDropdownMenu__item input[type='checkbox'] {
+  pointer-events: none;
+}
+
+.rrDropdownMenu__item--disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.rrDropdownMenu__item:hover {
+  background: var(--vscode-list-hoverBackground, var(--rr-list-hoverBackground));
+}
+
+.rrDropdownMenu__itemLabel {
+  min-width: 0;
+  flex: 1;
+}
+

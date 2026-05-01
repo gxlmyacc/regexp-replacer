@@ -1,0 +1,11 @@
+node_modules
+%CD%
+dist
+dist-webview
+.npm-cache
+.history
+.vite
+.vscode-test
+/release
+/coverage
+/chrome-extension/ui

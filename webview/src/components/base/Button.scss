@@ -1,0 +1,194 @@
+/* 通用按钮样式：DropdownMenu 与弹窗等共享。 */
+.btn {
+  background: var(--vscode-button-background, var(--rr-button-background));
+  color: var(--vscode-button-foreground, var(--rr-button-foreground));
+  border: 1px solid transparent;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.btn:hover {
+  background: var(--vscode-button-hoverBackground, var(--rr-button-hoverBackground));
+}
+
+.btnSecondary {
+  background: transparent;
+  border-color: var(--vscode-button-border, var(--rr-button-border));
+  color: var(--vscode-foreground, var(--rr-foreground));
+}
+
+.btnHasCaret {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.btnLabelSingleLine {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 140px;
+}
+
+.btnCaret {
+  opacity: 0.8;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* 下拉按钮“有选中项”的高亮状态：需要压过 btnSecondary 的透明背景 */
+.btnSecondary.btnDropdownActive {
+  background: var(--vscode-list-activeSelectionBackground, var(--rr-list-activeSelectionBackground));
+  color: var(--vscode-list-activeSelectionForeground, var(--rr-list-activeSelectionForeground));
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.btnIcon {
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.btnIcon--xs {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.btnIcon--sm {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+.btnIcon--md {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+/* TabButton：底部工具区页签按钮 */
+.tabBtn {
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  border: 1px solid transparent;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tabBtn:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.tabBtnActive {
+  background: var(--vscode-list-activeSelectionBackground, var(--rr-list-activeSelectionBackground));
+  color: var(--vscode-list-activeSelectionForeground, var(--rr-list-activeSelectionForeground));
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* TopIconButton：顶部图标按钮 */
+.topIconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--vscode-button-border, var(--rr-button-border));
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.85;
+  position: relative;
+}
+
+.iconDirtyStar {
+  position: absolute;
+  right: 4px;
+  top: 1px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--vscode-editorWarning-foreground, #ffcc00);
+  pointer-events: none;
+}
+
+.topIconBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.topIconBtn:disabled:hover {
+  background: transparent;
+}
+
+.topIconBtn:hover {
+  opacity: 1;
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.topIconBtnPrimary {
+  background: var(--vscode-button-background, var(--rr-button-background));
+  color: var(--vscode-button-foreground, var(--rr-button-foreground));
+  border-color: transparent;
+  opacity: 1;
+}
+
+.topIconBtnPrimary:hover {
+  background: var(--vscode-button-hoverBackground, var(--rr-button-hoverBackground));
+}
+
+.topIconBtnPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.topIconBtnPrimary:disabled:hover {
+  background: var(--vscode-button-background, var(--rr-button-background));
+}
+
+/* Chip Button：用于 flags 等轻量开关 */
+.rrChipBtn {
+  border: none;
+  border-radius: 4px;
+  padding: 2px 0px;
+  width: 16px;
+  height: 18px;
+  font-size: 12px;
+  line-height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: color-mix(in srgb, var(--vscode-input-foreground, var(--rr-input-foreground)) 76%, transparent);
+  cursor: pointer;
+  transition: background-color 80ms ease, color 80ms ease;
+}
+
+.rrChipBtn--on {
+  background: color-mix(in srgb, var(--vscode-focusBorder, #007fd4) 18%, transparent);
+  color: var(--vscode-focusBorder, #007fd4);
+  font-weight: 700;
+}
+
+.rrChipBtn:disabled {
+  opacity: 1;
+}
+
+.rrChipBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--vscode-list-hoverBackground, rgba(127, 127, 127, 0.18)) 65%, transparent);
+}
+
+.rrChipBtn:focus-visible {
+  outline: 1px solid var(--rr-focus-border, var(--rr-input-focused-border));
+  outline-offset: 1px;
+}
+

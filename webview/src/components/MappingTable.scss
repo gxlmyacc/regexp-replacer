@@ -1,0 +1,147 @@
+.rrMappingTable {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--vscode-panel-border, var(--rr-panel-border));
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--vscode-panel-background, var(--rr-panel-background));
+}
+
+.rrMappingTableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--rr-separator);
+  background: var(--vscode-editorGroupHeader-tabsBackground, var(--rr-tabsBackground));
+}
+
+.rrMappingTableRegexToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.9;
+  user-select: none;
+}
+
+.rrMappingTableRegexToggle > input[type='checkbox'] {
+  margin: 0;
+}
+
+.rrMappingTableTitle {
+  font-size: 12px;
+  opacity: 0.9;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rrMappingTableHelpIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--vscode-input-border, var(--rr-input-border)) 75%, transparent);
+  background: color-mix(in srgb, var(--vscode-input-background, var(--rr-input-background)) 60%, transparent);
+  font-size: 11px;
+  line-height: 14px;
+  opacity: 0.9;
+  user-select: none;
+}
+
+.rrMappingTableAddBtn,
+.rrMappingTableDelBtn {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid var(--vscode-input-border, var(--rr-input-border));
+  background: var(--vscode-input-background, var(--rr-input-background));
+  color: var(--vscode-input-foreground, var(--rr-input-foreground));
+  cursor: pointer;
+  line-height: 1;
+}
+
+.rrMappingTableAddBtn:hover,
+.rrMappingTableDelBtn:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.rrMappingTableGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 0;
+}
+
+.rrMappingTableBody {
+  overflow: auto;
+  min-height: 0;
+  padding: 6px 4px;
+}
+
+.rrMappingTableCell {
+  min-width: 0;
+}
+
+.rrMappingTableRow {
+  padding: 6px 0;
+}
+
+.rrMappingTableDelBtn {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.rrMappingTableFloat {
+  z-index: 20;
+}
+
+.rrMappingTableFloatInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: 1px solid var(--vscode-widget-border, var(--rr-input-border));
+  border-radius: 6px;
+  background: var(--vscode-editorHoverWidget-background, var(--rr-panel-background));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* RegexExpressionEditor 在表格内的外观对齐 Input(line) */
+.rrMappingTableExprHost {
+  position: relative;
+}
+
+.rrMappingTableExprHost .cm-editor {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--vscode-input-border, var(--rr-input-border));
+  border-radius: 4px;
+  min-height: 28px;
+  background: var(--vscode-input-background, var(--rr-input-background));
+  color: var(--vscode-input-foreground, var(--rr-input-foreground));
+  font-family: var(--vscode-editor-font-family, Consolas, monospace);
+  /* 对齐 Input(line) 的字号，避免 placeholder 视觉不一致 */
+  font-size: var(--vscode-font-size, 13px);
+}
+
+.rrMappingTableExprHost .cm-editor.cm-focused {
+  border-color: var(--rr-focus-border, var(--rr-input-focused-border));
+}
+
+.rrMappingTableExprHost .cm-content {
+  padding: 4px 8px;
+}
+
+.rrMappingTableExprHost .cm-placeholder {
+  color: var(--vscode-input-placeholderForeground, rgba(255, 255, 255, 0.45));
+  font: inherit;
+}
+
+.rrMappingTableExprHost--error .cm-editor {
+  border-color: var(--vscode-inputValidation-errorBorder, var(--vscode-errorForeground, #f14c4c));
+}
+

@@ -1,0 +1,262 @@
+[
+  {
+    "id": "dev_sample_01",
+    "title": "Demo: 数字加前缀",
+    "description": "把连续数字前面加上 #。",
+    "rules": [
+      {
+        "name": "数字加前缀",
+        "engine": "regex",
+        "find": "\\d+",
+        "replace": "#$&",
+        "testText": "a1 b22 c333",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_02",
+    "title": "Demo: 文本替换",
+    "description": "把 foo 替换为 bar。",
+    "rules": [
+      {
+        "engine": "text",
+        "find": "foo",
+        "replace": "bar"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_03",
+    "title": "Demo: 通配符替换",
+    "description": "把 a*?b 这种模式替换为 X。",
+    "rules": [
+      {
+        "engine": "wildcard",
+        "find": "a*?b",
+        "replace": "X",
+        "wildcardOptions": {
+          "dotAll": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_04",
+    "title": "Demo: 去掉行尾空格",
+    "description": "删除每行末尾的空格与制表符。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "[\\t ]+$",
+        "replace": "",
+        "testText": "a  \n\tb\t\nc",
+        "flags": "gm"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_05",
+    "title": "Demo: 统一换行（CRLF -> LF）",
+    "description": "把 Windows 换行 \\r\\n 统一为 \\n。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "\\r\\n",
+        "replace": "\\n",
+        "testText": "line1\r\nline2\r\n",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_06",
+    "title": "Demo: 合并多余空行",
+    "description": "将连续 3 行及以上的空行压缩为 2 行。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "(?:\\r?\\n){3,}",
+        "replace": "\\n\\n",
+        "testText": "a\n\n\n\nb",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_07",
+    "title": "Demo: 驼峰转短横线",
+    "description": "把 fooBarBaz 转为 foo-bar-baz（仅演示简单规则）。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "([a-z0-9])([A-Z])",
+        "replace": "$1-$2",
+        "testText": "fooBarBaz",
+        "flags": "g"
+      },
+      {
+        "engine": "regex",
+        "find": "[A-Z]",
+        "replace": "X",
+        "testText": "fooBarBaz",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_08",
+    "title": "Demo: 邮箱脱敏",
+    "description": "把邮箱 user@example.com 脱敏为 u***@example.com。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "\\b([A-Za-z0-9])([A-Za-z0-9._%+-]*)(@[^\\s@]+)\\b",
+        "replace": "$1***$3",
+        "testText": "user@example.com admin.test+1@example.com",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_09",
+    "title": "Demo: JSON Key 加引号",
+    "description": "将 {a:1, b:2} 的 key 变为 {\"a\":1, \"b\":2}（简化版）。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "(^|[,{\\s])([A-Za-z_][A-Za-z0-9_]*)(\\s*):",
+        "replace": "$1\"$2\"$3:",
+        "testText": "{a:1, b:2, foo_bar: 3}",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_10",
+    "title": "Demo: Markdown 链接提取文本",
+    "description": "把 [text](url) 替换为 text。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "\\[([^\\]]+)\\]\\(([^)]+)\\)",
+        "replace": "$1",
+        "testText": "see [Doc](https://example.com) and [API](./api.md)",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_11",
+    "title": "Demo: 逗号后补空格",
+    "description": "把 a,b,c 变为 a, b, c（不处理换行场景）。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": ",(?!\\s)",
+        "replace": ", ",
+        "testText": "a,b,c",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_12",
+    "title": "Demo: 删除 HTML 注释",
+    "description": "移除 <!-- ... --> 注释块（非贪婪）。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "<!--[\\s\\S]*?-->",
+        "replace": "",
+        "testText": "a<!-- c -->b",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_13",
+    "title": "Demo: 提取双引号内容",
+    "description": "将 \"abc\" 变为 abc（支持转义的简化版）。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "\"((?:\\\\\\\\.|[^\"\\\\\\\\])*)\"",
+        "replace": "$1",
+        "testText": "\"abc\" \"a\\\\\"b\"",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_14",
+    "title": "Demo: 去掉 UTF-8 BOM",
+    "description": "删除文本开头的 \\uFEFF（BOM）。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "^\\uFEFF",
+        "replace": "",
+        "testText": "\uFEFFHello",
+        "flags": ""
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_15",
+    "title": "Demo: 批量注释掉 console.log",
+    "description": "将 console.log(...) 变为 // console.log(...)（简化版，按行处理）。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "^(\\s*)console\\.log\\((.*)\\)\\s*;?\\s*$",
+        "replace": "$1// console.log($2);",
+        "testText": "console.log(1);\n  console.log(foo, bar)",
+        "flags": "gm"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_16",
+    "title": "Demo: 去掉 import 的未用空行",
+    "description": "将连续空行压缩为单空行（常用于整理 import 区块）。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "(?:\\r?\\n){3,}",
+        "replace": "\\n\\n",
+        "testText": "a\n\n\n\nb",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_17",
+    "title": "Demo: 统一引号（' -> \")",
+    "description": "把单引号字符串替换为双引号字符串（简化版，不处理复杂转义）。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "'([^'\\r\\n]*)'",
+        "replace": "\"$1\"",
+        "testText": "const a = 'x'; const b = 'y';",
+        "flags": "g"
+      }
+    ]
+  },
+  {
+    "id": "dev_sample_18",
+    "title": "Demo: 路径分隔符（\\\\ -> /）",
+    "description": "把 Windows 路径分隔符反斜杠替换为正斜杠。",
+    "rules": [
+      {
+        "engine": "regex",
+        "find": "\\\\\\\\",
+        "replace": "/",
+        "testText": "C:\\\\Users\\\\me\\\\file.txt",
+        "flags": "g"
+      }
+    ]
+  }
+]
+

@@ -1,0 +1,59 @@
+.rrModal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.rrModal__card {
+  width: min(520px, calc(100vw - 32px));
+  background: var(--vscode-editor-background, var(--rr-editor-background));
+  border: 1px solid var(--vscode-panel-border, var(--rr-panel-border));
+  border-radius: 8px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.rrModal__header {
+  padding: 10px 12px;
+  background: var(--vscode-editorGroupHeader-tabsBackground, var(--rr-tabsBackground));
+  border-bottom: 1px solid var(--vscode-panel-border, var(--rr-panel-border));
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rrModal__header--noTitle {
+  justify-content: flex-end;
+}
+
+.rrModal__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rrModal__close {
+  flex: none;
+}
+
+.rrModal__body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rrModal__footer {
+  padding: 0 12px 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+

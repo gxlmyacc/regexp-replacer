@@ -1,0 +1,107 @@
+.rrInput {
+  --rr-input-border-color: var(--vscode-input-border, var(--rr-input-border));
+  --rr-input-bg-color: var(--vscode-input-background, var(--rr-input-background));
+  --rr-input-fg-color: var(--vscode-input-foreground, var(--rr-input-foreground));
+  --rr-input-placeholder-color: var(--vscode-input-placeholderForeground, rgba(255, 255, 255, 0.45));
+  position: relative;
+  min-width: 0;
+  width: 100%;
+}
+
+.rrInput .rrInput__control,
+.rrInput .rrInput__overlay {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--rr-input-border-color);
+  border-radius: 4px;
+  padding: 4px 8px;
+  min-height: 28px;
+  line-height: 1.4;
+}
+
+.rrInput--multiline .rrInput__control,
+.rrInput--multiline .rrInput__overlay {
+  min-height: 26px;
+  padding: 6px 8px;
+}
+
+.rrInput--default .rrInput__control,
+.rrInput--default .rrInput__overlay {
+  font-family: var(--vscode-font-family, system-ui, sans-serif);
+  font-size: var(--vscode-font-size, 13px);
+}
+
+.rrInput--mono .rrInput__control,
+.rrInput--mono .rrInput__overlay {
+  font-family: var(--vscode-editor-font-family, Consolas, monospace);
+  font-size: 12px;
+}
+
+.rrInput--mono.rrInput--multiline .rrInput__control,
+.rrInput--mono.rrInput--multiline .rrInput__overlay {
+  font-size: 12.5px;
+}
+
+.rrInput .rrInput__control {
+  position: relative;
+  outline: none;
+  background: var(--rr-input-bg-color);
+  color: var(--rr-input-fg-color);
+}
+
+.rrInput--hasOverlay .rrInput__control {
+  /* overlay 负责显示高亮背景，输入层需要透明，避免盖住 overlay 内容 */
+  background: transparent;
+  color: transparent;
+}
+
+.rrInput--hasOverlay .rrInput__control::placeholder {
+  color: transparent;
+  opacity: 0;
+}
+
+.rrInput .rrInput__control::placeholder {
+  color: var(--rr-input-placeholder-color);
+}
+
+.rrInput .rrInput__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--rr-input-bg-color);
+  color: var(--rr-input-fg-color);
+}
+
+.rrInput:focus-within .rrInput__control {
+  border-color: var(--rr-focus-border, var(--rr-input-focused-border));
+}
+
+.rrInput--status-error .rrInput__control,
+.rrInput--status-error .rrInput__overlay {
+  border-color: var(--vscode-inputValidation-errorBorder, var(--vscode-errorForeground, #f14c4c));
+}
+
+.rrInput--status-warning .rrInput__control,
+.rrInput--status-warning .rrInput__overlay {
+  border-color: var(--vscode-inputValidation-warningBorder, #cca700);
+}
+
+.rrInput--disabled .rrInput__control {
+  opacity: 0.75;
+  cursor: not-allowed;
+  color: var(--vscode-disabledForeground, rgba(255, 255, 255, 0.55));
+}
+
+.rrInput--disabled .rrInput__control::placeholder,
+.rrInput--disabled .rrInput__overlay {
+  color: var(--vscode-disabledForeground, rgba(255, 255, 255, 0.55));
+}
+
+.rrInput--variant-ruleTitle {
+  max-width: 200px;
+}
+

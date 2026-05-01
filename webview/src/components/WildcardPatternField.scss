@@ -1,0 +1,58 @@
+.wildcard-pattern-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.wildcard-pattern-field__textarea {
+  border: none;
+}
+
+.wildcard-pattern-field__textarea {
+  color: transparent;
+  caret-color: var(--vscode-input-foreground, var(--rr-input-foreground));
+}
+
+.wildcard-pattern-field__textarea--singleline {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.wildcard-pattern-field__textarea--multiline {
+  resize: none;
+  overflow: hidden;
+}
+
+.wildcard-pattern-field .wildcard-pattern-field__tok--wildcard-many {
+  color: var(--vscode-symbolIcon-functionForeground, #dcdcaa);
+  font-weight: 700;
+}
+
+.wildcard-pattern-field .wildcard-pattern-field__tok--wildcard-single {
+  color: var(--vscode-symbolIcon-variableForeground, #9cdcfe);
+  font-weight: 700;
+}
+
+.wildcard-pattern-field .wildcard-pattern-field__tok--wildcard-escape {
+  color: var(--vscode-symbolIcon-stringForeground, #ce9178);
+  font-weight: 700;
+}
+
+.wildcard-pattern-field .wildcard-pattern-field__tok--wildcard-quant-plus {
+  color: var(--vscode-symbolIcon-functionForeground, #dcdcaa);
+  font-weight: 700;
+}
+
+.wildcard-pattern-field .wildcard-pattern-field__tok--wildcard-quant-star {
+  color: var(--vscode-symbolIcon-functionForeground, #dcdcaa);
+  font-weight: 700;
+}
+
+.wildcard-pattern-field .wildcard-pattern-field__tok--wildcard-quant-qmark {
+  color: var(--vscode-symbolIcon-functionForeground, #dcdcaa);
+  font-weight: 700;
+}
+
+.wildcard-pattern-field .wildcard-pattern-field__placeholder {
+  color: var(--vscode-input-placeholderForeground, rgba(255, 255, 255, 0.45));
+}
+

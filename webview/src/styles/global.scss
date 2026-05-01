@@ -1,0 +1,91 @@
+/* 全局样式：主题变量兜底、布局基础与滚动条。 */
+:root {
+  /* dev 环境（浏览器打开 Vite 页面）下没有 VS Code 注入的主题变量，这里给出暗色默认值兜底 */
+  --rr-foreground: #d4d4d4;
+  --rr-editor-background: #1e1e1e;
+  --rr-sideBar-background: #252526;
+  --rr-panel-background: #1e1e1e;
+  --rr-panel-border: rgba(255, 255, 255, 0.12);
+  --rr-input-background: #3c3c3c;
+  --rr-input-foreground: #d4d4d4;
+  --rr-input-border: rgba(255, 255, 255, 0.16);
+  --rr-input-focused-border: rgba(255, 255, 255, 0.16);
+  --rr-focus-border: rgba(255, 255, 255, 0.32);
+  --rr-button-background: #0e639c;
+  --rr-button-foreground: #ffffff;
+  --rr-button-hoverBackground: #1177bb;
+  --rr-button-border: rgba(255, 255, 255, 0.18);
+  --rr-list-hoverBackground: rgba(255, 255, 255, 0.06);
+  --rr-list-activeSelectionBackground: rgba(14, 99, 156, 0.55);
+  --rr-list-activeSelectionForeground: #ffffff;
+  --rr-tabsBackground: #2d2d2d;
+  --rr-menu-background: #252526;
+  --rr-menu-foreground: #d4d4d4;
+  --rr-separator: rgba(255, 255, 255, 0.14);
+
+  color: var(--vscode-foreground, var(--rr-foreground));
+  background: var(--vscode-editor-background, var(--rr-editor-background));
+  font-family: var(--vscode-font-family, system-ui, -apple-system, Segoe UI, Arial, sans-serif);
+  font-size: var(--vscode-font-size, 13px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+}
+
+/* 滚动条：统一做细、弱化轨道、悬停更明显（Webview/Chromium 优先） */
+:root {
+  --rr-scrollbar-size: 10px;
+  --rr-scrollbar-track: transparent;
+  --rr-scrollbar-thumb: rgba(127, 127, 127, 0.35);
+  --rr-scrollbar-thumb-hover: rgba(127, 127, 127, 0.55);
+  --rr-scrollbar-thumb-active: rgba(127, 127, 127, 0.7);
+}
+
+/* Firefox（Webview 里通常不会用到，但保底） */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rr-scrollbar-thumb) var(--rr-scrollbar-track);
+}
+
+/* Chromium/WebKit */
+*::-webkit-scrollbar {
+  width: var(--rr-scrollbar-size);
+  height: var(--rr-scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--rr-scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--rr-scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--rr-scrollbar-thumb-hover);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: var(--rr-scrollbar-thumb-active);
+}
+
+/* 角落留空，避免出现“白块” */
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+

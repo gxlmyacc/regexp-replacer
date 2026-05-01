@@ -1,0 +1,106 @@
+.rrHookDepConfirm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--vscode-foreground, var(--rr-foreground));
+}
+
+.rrHookDepConfirm__intro {
+  white-space: pre-wrap;
+  line-height: 1.45;
+  opacity: 0.92;
+}
+
+.rrHookDepConfirm__listWrap {
+  max-height: min(240px, 40vh);
+  overflow: auto;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--vscode-widget-border, var(--rr-panel-border)) 80%, transparent);
+  background: color-mix(in srgb, var(--vscode-editor-background, var(--rr-editor-background)) 92%, transparent);
+}
+
+.rrHookDepConfirm__blocks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rrHookDepConfirm__blockTitle {
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.rrHookDepConfirm__blockId {
+  font-weight: 400;
+  opacity: 0.75;
+  font-size: 12px;
+}
+
+.rrHookDepConfirm__items {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  opacity: 0.88;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.rrHookDepConfirm__items--rows {
+  padding-left: 0;
+  list-style: none;
+}
+
+.rrHookDepConfirm__row {
+  margin: 6px 0 0;
+}
+
+.rrHookDepConfirm__rowLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rrHookDepConfirm__rowLabel input {
+  margin-top: 2px;
+  flex: none;
+}
+
+.rrHookDepConfirm__checkboxRow {
+  padding-top: 4px;
+}
+
+.rrHookDepConfirm__checkLabel {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.45;
+  user-select: none;
+}
+
+.rrHookDepConfirm__checkLabel input {
+  margin-top: 2px;
+  flex: none;
+}
+
+.rrHookDepConfirm__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rrHookDepConfirm__okDanger {
+  background: color-mix(in srgb, var(--vscode-errorForeground, #f14c4c) 85%, #000) !important;
+  border-color: transparent !important;
+  color: var(--vscode-button-foreground, #fff) !important;
+}
+
+.rrHookDepConfirm__okDanger:hover {
+  filter: brightness(1.06);
+}

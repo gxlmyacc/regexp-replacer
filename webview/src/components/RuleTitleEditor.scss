@@ -1,0 +1,23 @@
+.ruleTitleTag {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  color: var(--vscode-foreground, var(--rr-foreground));
+  cursor: text;
+  font-family: var(--vscode-editor-font-family);
+}
+
+.ruleTitleText {
+  max-width: 100%;
+}
+
+.ruleTitleTag:hover {
+  border-color: var(--vscode-input-border, var(--rr-input-border));
+  background: rgba(127, 127, 127, 0.08);
+}
+

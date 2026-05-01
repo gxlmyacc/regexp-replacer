@@ -1,0 +1,14 @@
+.leftPanelRail {
+  height: 100%;
+  min-height: 0;
+  width: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 6px;
+  gap: 8px;
+  background: var(--vscode-sideBar-background, var(--rr-sideBar-background));
+  border-right: 1px solid var(--vscode-sideBar-border, rgba(127, 127, 127, 0.2));
+}
+

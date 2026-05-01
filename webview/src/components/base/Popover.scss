@@ -1,0 +1,62 @@
+.rrPopoverArrow {
+  --rr-popover-arrow-width: 14px;
+  --rr-popover-arrow-height: 9px;
+  --rr-popover-arrow-border-color: var(--vscode-widget-border, var(--rr-input-border));
+  --rr-popover-arrow-fill-color: var(--vscode-editorHoverWidget-background, var(--rr-panel-background));
+  position: absolute;
+  width: var(--rr-popover-arrow-width);
+  height: var(--rr-popover-arrow-height);
+  background: transparent;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rrPopoverArrow::before,
+.rrPopoverArrow::after {
+  content: '';
+  position: absolute;
+}
+
+.rrPopoverArrow::before {
+  inset: 0;
+  background: var(--rr-popover-arrow-border-color);
+}
+
+.rrPopoverArrow::after {
+  background: var(--rr-popover-arrow-fill-color);
+}
+
+[data-popper-placement^='top'] .rrPopoverArrow {
+  bottom: calc((var(--rr-popover-arrow-height) * -1) + 1px);
+}
+
+[data-popper-placement^='bottom'] .rrPopoverArrow {
+  top: calc((var(--rr-popover-arrow-height) * -1) + 1px);
+}
+
+/* 向下箭头（用于 top placement）：连接处在上边，连接边不绘制边框。 */
+[data-popper-placement^='top'] .rrPopoverArrow::before {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+[data-popper-placement^='top'] .rrPopoverArrow::after {
+  left: 1px;
+  top: 0;
+  width: calc(100% - 2px);
+  height: calc(100% - 1px);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/* 向上箭头（用于 bottom placement）：连接处在下边，连接边不绘制边框。 */
+[data-popper-placement^='bottom'] .rrPopoverArrow::before {
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+}
+
+[data-popper-placement^='bottom'] .rrPopoverArrow::after {
+  left: 1px;
+  top: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 1px);
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+}
+

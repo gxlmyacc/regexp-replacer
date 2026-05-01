@@ -1,0 +1,62 @@
+.replacement-template-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.replacement-template-field__textarea {
+  /* 需要与 Input 统一边框样式，避免与纯文本输入框表现不一致 */
+}
+
+.replacement-template-field__textarea {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.replacement-template-field__textarea--highlight {
+  color: transparent;
+  caret-color: var(--vscode-input-foreground, var(--rr-input-foreground));
+}
+
+.replacement-template-field .replacement-template-field__tok--escape {
+  color: var(--vscode-symbolIcon-stringForeground, #ce9178);
+}
+
+.replacement-template-field .replacement-template-field__tok--replacement-index {
+  color: var(--vscode-symbolIcon-variableForeground, #9cdcfe);
+  font-weight: 600;
+}
+
+.replacement-template-field .replacement-template-field__tok--replacement-index-l1 {
+  color: #ffd700;
+}
+
+.replacement-template-field .replacement-template-field__tok--replacement-index-l2 {
+  color: #4fc1ff;
+}
+
+.replacement-template-field .replacement-template-field__tok--replacement-index-l3 {
+  color: #c586c0;
+}
+
+.replacement-template-field .replacement-template-field__tok--replacement-index-l4 {
+  color: #4ec9b0;
+}
+
+.replacement-template-field .replacement-template-field__tok--replacement-index-l5 {
+  color: #ce9178;
+}
+
+.replacement-template-field .replacement-template-field__tok--replacement-index-l6 {
+  color: #9cdcfe;
+}
+
+.replacement-template-field .replacement-template-field__tok--replacement-special {
+  color: var(--vscode-symbolIcon-functionForeground, #dcdcaa);
+  font-weight: 600;
+}
+
+.replacement-template-field .replacement-template-field__placeholder {
+  color: var(--vscode-input-placeholderForeground, rgba(255, 255, 255, 0.45));
+  font: inherit;
+}
+

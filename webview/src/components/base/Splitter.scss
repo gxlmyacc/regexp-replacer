@@ -1,0 +1,89 @@
+/* 拖拽分割条：用于左右/上下区域尺寸调整。 */
+.rrSplitter {
+  background: transparent;
+  position: relative;
+}
+
+.rrSplitter::before {
+  content: '';
+  position: absolute;
+  background: var(--rr-separator);
+  opacity: 0.6;
+}
+
+.rrSplitter:hover::before {
+  opacity: 0.9;
+}
+
+.rrSplitterV {
+  width: 6px;
+  cursor: col-resize;
+  height: 100%;
+}
+
+.rrSplitterV::before {
+  left: 2px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}
+
+.rrSplitterH {
+  height: 6px;
+  cursor: row-resize;
+  width: 100%;
+}
+
+.rrSplitterH::before {
+  top: 2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+
+.rrSplitterToggle {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--vscode-input-border, var(--rr-input-border));
+  background: var(--vscode-input-background, var(--rr-input-background));
+  color: var(--vscode-input-foreground, var(--rr-input-foreground));
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+
+.rrSplitter:hover .rrSplitterToggle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.rrSplitterToggle--vertical {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.rrSplitterToggle--horizontal {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.rrSplitterToggle:hover {
+  border-color: var(--rr-focus-border, var(--rr-input-focused-border));
+}
+
+.rrSplitterToggleTooltipHost--vertical {
+  position: static !important;
+}
+
+.rrSplitterToggleTooltipHost--horizontal {
+  position: static !important;
+}
+

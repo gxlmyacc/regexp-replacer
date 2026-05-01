@@ -1,0 +1,41 @@
+.rrTooltipHost {
+  display: inline-flex;
+  position: relative;
+}
+
+.rrTooltipHost--block {
+  display: block;
+  width: 100%;
+}
+
+.rrTooltipBubble {
+  --rr-popover-arrow-border-color: var(--vscode-widget-border, var(--rr-input-border));
+  --rr-popover-arrow-fill-color: var(--vscode-editorHoverWidget-background, var(--rr-panel-background));
+  position: absolute;
+  z-index: 9999;
+  display: block;
+  width: max-content;
+  max-width: min(560px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--vscode-widget-border, var(--rr-input-border));
+  background: var(--vscode-editorHoverWidget-background, var(--rr-panel-background));
+  color: var(--vscode-editorHoverWidget-foreground, var(--rr-foreground));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  opacity: 1;
+}
+
+.rrTooltipBubble[data-popper-placement^='top'] {
+  transform-origin: bottom center;
+}
+
+.rrTooltipBubble[data-popper-placement^='bottom'] {
+  transform-origin: top center;
+}
+

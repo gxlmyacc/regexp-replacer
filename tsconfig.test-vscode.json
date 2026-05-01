@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": ["ES2022"],
+    "outDir": "dist/test-vscode",
+    "rootDir": ".",
+    "sourceMap": true,
+    "types": ["node", "vscode", "mocha"],
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["test/vscode/**/*.ts", "src/**/*.ts"]
+}
+

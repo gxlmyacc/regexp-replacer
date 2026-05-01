@@ -1,0 +1,42 @@
+.rrTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rrTag__content {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rrTag__close {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.8;
+  padding: 0;
+  line-height: 1;
+}
+
+.rrTag__close:hover {
+  opacity: 1;
+}
+
+.rrTag--sm {
+  font-size: 12px;
+}
+
+.rrTag--md {
+  font-size: 12px;
+}
+
+.rrTag--default {
+}
+
+.rrTag--danger {
+}
+

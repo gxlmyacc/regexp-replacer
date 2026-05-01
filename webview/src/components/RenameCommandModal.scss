@@ -1,0 +1,11 @@
+.renameCommandModal__error {
+  color: var(--vscode-errorForeground, #f14c4c);
+  font-size: 12px;
+}
+
+.renameCommandModal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+

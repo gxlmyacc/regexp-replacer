@@ -1,0 +1,245 @@
+.leftPanel {
+  border-right: none;
+  background: var(--vscode-sideBar-background, var(--rr-sideBar-background));
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  height: 100%;
+  min-height: 0;
+}
+
+.leftHeader {
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.leftTopRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.leftTopTitle {
+  font-weight: 600;
+  opacity: 0.9;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leftTopActions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.commandList {
+  overflow: auto;
+  padding: 4px;
+  flex: 1;
+  min-height: 0;
+}
+
+.commandItem {
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.commandRow {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
+.rrRuleItem {
+  position: relative;
+}
+
+.rrRuleRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.rrRuleMain {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rrRuleMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.rrRuleActionsOverlay {
+  position: absolute;
+  right: 6px;
+  top: 5px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rrRuleItem:hover .rrRuleActionsOverlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.rrCommandDragHandle {
+  position: absolute;
+  left: -8px;
+  top: 6px;
+  bottom: 6px;
+  width: 8px;
+  border-radius: 2px;
+  opacity: 0;
+  pointer-events: auto;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  color: inherit;
+  border: 1px solid color-mix(in srgb, var(--vscode-input-border, var(--rr-input-border)) 90%, transparent);
+  background: var(--vscode-input-background, var(--rr-input-background));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+  font-size: 10px;
+}
+
+/* 悬浮命令项时才显示拖拽图标（不撑高布局，因为绝对定位）。 */
+.commandItem:hover .rrCommandDragHandle {
+  opacity: 1;
+  cursor: grab;
+  border-color: color-mix(in srgb, var(--vscode-editor-foreground, var(--rr-foreground)) 28%, transparent);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.36);
+}
+
+.commandMeta {
+  min-width: 0;
+}
+
+.leftPanelEllipsisText {
+  min-width: 0;
+}
+
+.commandTitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commandSubRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.commandId {
+  opacity: 0.7;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rrDirtyStar {
+  margin-left: 4px;
+  font-weight: 700;
+  color: var(--vscode-gitDecoration-untrackedResourceForeground, var(--vscode-charts-yellow, #f5c542));
+}
+
+.rrRuleStateTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.2;
+  opacity: 0.92;
+}
+
+.rrRuleStateTag--disabled {
+  border: 1px solid color-mix(in srgb, var(--vscode-input-border, var(--rr-input-border)) 75%, transparent);
+  background: color-mix(in srgb, var(--vscode-editor-foreground, var(--rr-foreground)) 10%, transparent);
+  color: color-mix(in srgb, var(--vscode-editor-foreground, var(--rr-foreground)) 75%, transparent);
+}
+
+.commandActionsOverlay {
+  position: absolute;
+  right: 0;
+  bottom: -2px;
+  top: auto;
+  transform: none;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.commandItem:hover .commandActionsOverlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--vscode-input-border, var(--rr-input-border)) 90%, transparent);
+  background: var(--vscode-input-background, var(--rr-input-background));
+  color: inherit;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+  font-size: 10px;
+}
+
+.commandItemActive .iconBtn {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.iconBtn:hover {
+  background: var(--vscode-input-background, var(--rr-input-background));
+  border-color: var(--rr-focus-border, var(--rr-input-focused-border));
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.36);
+}
+
+.commandItem:hover {
+  background: var(--vscode-list-hoverBackground, var(--rr-list-hoverBackground));
+}
+
+.commandItemActive {
+  background: var(--vscode-list-activeSelectionBackground, var(--rr-list-activeSelectionBackground));
+  color: var(--vscode-list-activeSelectionForeground, var(--rr-list-activeSelectionForeground));
+  position: relative;
+}
+
+.commandItemActive::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--vscode-button-background, var(--rr-button-background));
+}
+
+.commandItemActive:hover {
+  background: color-mix(in srgb, var(--vscode-list-activeSelectionBackground, var(--rr-list-activeSelectionBackground)) 85%, #ffffff 15%);
+}
+

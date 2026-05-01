@@ -1,0 +1,90 @@
+.hookChipsBar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.hookChipsTitle {
+  font-size: 12px;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+.hookChips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+  align-items: center;
+}
+
+.hookChipsTop {
+  margin-bottom: 2px;
+}
+
+.hookChipsBottom {
+  margin-top: 2px;
+}
+
+.hookChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--vscode-button-border, var(--rr-button-border));
+  background: rgba(127, 127, 127, 0.1);
+  max-width: 240px;
+  cursor: grab;
+  user-select: none;
+}
+
+.hookChip:active {
+  cursor: grabbing;
+}
+
+.hookChipDragOver {
+  outline: 1px dashed rgba(255, 255, 255, 0.35);
+  outline-offset: 2px;
+}
+
+.hookChipDragging {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.hookChipPlaceholder {
+  background: rgba(127, 127, 127, 0.06);
+  border-style: dashed;
+}
+
+.hookChipOverlay {
+  cursor: grabbing;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  background: var(--vscode-menu-background, var(--rr-menu-background));
+  border-color: rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+.hookChipText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.hookChipRemove {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.8;
+  padding: 0;
+  line-height: 1;
+}
+
+.hookChipRemove:hover {
+  opacity: 1;
+}
+

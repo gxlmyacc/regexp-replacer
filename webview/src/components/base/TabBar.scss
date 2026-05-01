@@ -1,0 +1,15 @@
+.rrTabBar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-top: 8px;
+  border-bottom: 1px solid var(--rr-separator);
+  padding-bottom: 6px;
+}
+
+.rrTabBar__extra {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+

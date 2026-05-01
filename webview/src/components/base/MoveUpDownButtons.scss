@@ -1,0 +1,30 @@
+.rrMoveUpDownButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  height: 28px; /* 对齐 Input(line) 的高度 */
+}
+
+.rrMoveUpDownButtonsBtn {
+  width: 12px;
+  height: 12px; /* 12 + 2(gap) + 12 = 26（上下留白自动居中） */
+  padding: 0;
+  border-radius: 3px;
+  border: 1px solid var(--vscode-input-border, var(--rr-input-border));
+  background: var(--vscode-input-background, var(--rr-input-background));
+  color: var(--vscode-input-foreground, var(--rr-input-foreground));
+  line-height: 12px;
+  font-size: 8px;
+}
+
+.rrMoveUpDownButtonsBtn:hover:enabled {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.rrMoveUpDownButtonsBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+

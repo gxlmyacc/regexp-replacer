@@ -1,0 +1,141 @@
+.regexExpressionEditor {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+}
+
+/* 避免被其它 CodeMirror 场景的全局样式拉伸高度（如测试文本编辑器）。 */
+.regexExpressionEditor .cm-editor {
+  height: auto;
+}
+
+.rrRegexTok {
+  /* 默认轻量强调，给“活跃括号”保留足够的视觉增量。 */
+  font-weight: 500;
+}
+
+.rrRegexTok--escape {
+  color: var(--vscode-debugTokenExpression-string, #ce9178);
+}
+
+.rrRegexTok--class {
+  color: var(--vscode-debugTokenExpression-number, #b5cea8);
+}
+
+.rrRegexTok--group {
+  color: var(--vscode-symbolIcon-functionForeground, #dcdcaa);
+  font-weight: 600;
+}
+
+.rrRegexTok--group-l1 {
+  color: #ffd700;
+}
+
+.rrRegexTok--group-l2 {
+  color: #4fc1ff;
+}
+
+.rrRegexTok--group-l3 {
+  color: #c586c0;
+}
+
+.rrRegexTok--group-l4 {
+  color: #4ec9b0;
+}
+
+.rrRegexTok--group-l5 {
+  color: #ce9178;
+}
+
+.rrRegexTok--group-l6 {
+  color: #9cdcfe;
+}
+
+.rrRegexTok--bracket {
+  font-weight: 600;
+}
+
+.rrRegexTok--bracket-l1 {
+  color: #ffd700;
+}
+
+.rrRegexTok--bracket-l2 {
+  color: #4fc1ff;
+}
+
+.rrRegexTok--bracket-l3 {
+  color: #c586c0;
+}
+
+.rrRegexTok--bracket-l4 {
+  color: #4ec9b0;
+}
+
+.rrRegexTok--bracket-l5 {
+  color: #ce9178;
+}
+
+.rrRegexTok--bracket-l6 {
+  color: #9cdcfe;
+}
+
+.rrRegexTok--pair-active-range {
+  border: 1px solid color-mix(in srgb, var(--rr-active-bracket-color, var(--vscode-focusBorder, #007fd4)) 72%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--rr-active-bracket-color, var(--vscode-focusBorder, #007fd4)) 14%, transparent);
+  box-sizing: border-box;
+}
+
+.rrRegexTok--pair-active-range-l1 {
+  --rr-active-bracket-color: #ffd700;
+}
+
+.rrRegexTok--pair-active-range-l2 {
+  --rr-active-bracket-color: #4fc1ff;
+}
+
+.rrRegexTok--pair-active-range-l3 {
+  --rr-active-bracket-color: #c586c0;
+}
+
+.rrRegexTok--pair-active-range-l4 {
+  --rr-active-bracket-color: #4ec9b0;
+}
+
+.rrRegexTok--pair-active-range-l5 {
+  --rr-active-bracket-color: #ce9178;
+}
+
+.rrRegexTok--pair-active-range-l6 {
+  --rr-active-bracket-color: #9cdcfe;
+}
+
+.rrRegexTok--pair-active {
+  font-weight: 900;
+}
+
+.rrRegexTok--error {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: var(--vscode-errorForeground, #f14c4c);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 6px;
+  text-decoration-skip-ink: none;
+}
+
+.rrRegexTok--quant {
+  color: var(--vscode-symbolIcon-operatorForeground, #c586c0);
+}
+
+.rrRegexTok--alt {
+  color: var(--vscode-symbolIcon-operatorForeground, #c586c0);
+}
+
+.rrRegexTok--anchor {
+  color: var(--vscode-symbolIcon-keywordForeground, #569cd6);
+}
+
+.rrRegexTok--dot {
+  color: var(--vscode-symbolIcon-operatorForeground, #c586c0);
+}
+

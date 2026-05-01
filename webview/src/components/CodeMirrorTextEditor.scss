@@ -1,0 +1,14 @@
+/* CodeMirror 外观适配：
+ * 这里的样式仅用于“测试文本编辑器”（.editorHost）场景。
+ * 注意不要用全局 .cm-editor 选择器，否则会影响 RegexExpressionEditor 这类“单行输入框”。
+ */
+.editorHost .cm-editor {
+  height: 100%;
+}
+
+.editorHost .cm-scroller {
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+  line-height: var(--vscode-editor-line-height);
+}
+

@@ -1,0 +1,30 @@
+/* 工具区通用样式：多个组件共享。 */
+.toolsPreview {
+  padding: 8px;
+  border: 1px solid var(--vscode-input-border, var(--rr-input-border));
+  border-radius: 4px;
+  background: var(--vscode-input-background, var(--rr-input-background));
+  color: var(--vscode-input-foreground, var(--rr-input-foreground));
+  font-family: var(--vscode-editor-font-family);
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+.toolsPreviewFill {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ListResultPanel 的列表布局样式已迁移到 components/ListResultPanel.scss */
+
+/* Monaco decorations（测试编辑器匹配高亮） */
+.regexpReplacerMatch {
+  background: rgba(255, 215, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.55);
+}
+
+.regexpReplacerMatchActive {
+  background: rgba(255, 165, 0, 0.35);
+  border-bottom: 1px solid rgba(255, 165, 0, 0.75);
+}
+

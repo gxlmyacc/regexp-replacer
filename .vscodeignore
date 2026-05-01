@@ -1,0 +1,38 @@
+# Dependencies & caches
+node_modules/**
+webview/node_modules/**
+webview/.npm-cache/**
+.npm-cache/**
+%CD%/**
+.history/**
+.vscode-test/**
+
+# Sources (keep dist only)
+src/**
+webview/src/**
+scripts/**
+chrome-extension/**
+chrome-extension/ui/**
+release/**
+webview/**
+
+# Build artifacts
+**/*.map
+**/*.ts
+
+# Tests (never publish)
+dist/test/**
+dist/test-node/**
+dist/test-vscode/**
+
+# Webview dev artifacts
+dist-webview/regexpReplacer.dev.commands.json
+
+# Dev-only configs
+.vscode/**
+eslint.config.js
+cspell.json
+tsconfig*.json
+
+# Docs
+README.zh-CN.md

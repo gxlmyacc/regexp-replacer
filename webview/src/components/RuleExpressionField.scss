@@ -1,0 +1,23 @@
+/* 与 .autoGrowInput 行为一致，类名由组件独占便于拆分样式 */
+.rule-expression-field__textarea {
+  box-sizing: border-box;
+  min-height: 26px;
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  resize: none;
+  line-height: 1.4;
+  padding: 6px 8px;
+  background: var(--vscode-input-background, var(--rr-input-background));
+  color: var(--vscode-input-foreground, var(--rr-input-foreground));
+  border: 1px solid var(--vscode-input-border, var(--rr-input-border));
+  border-radius: 4px;
+  outline: none;
+  font-family: var(--vscode-editor-font-family, Consolas, monospace);
+  font-size: 12.5px;
+  overflow: hidden;
+}
+
+.rule-expression-field__textarea:focus {
+  border-color: var(--rr-focus-border, var(--rr-input-focused-border));
+}
