@@ -9,3 +9,4 @@ dist-webview
 /release
 /coverage
 /chrome-extension/ui
+/chrome-extension/pem

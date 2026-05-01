@@ -7,7 +7,8 @@ import react from '@vitejs/plugin-react';
  *
  * 说明：
  * - 使用 base:'./' 生成相对资源路径，适配 chrome-extension:// URL。
- * - 输出到仓库根目录的 chrome-extension/ui，作为扩展页面资源。
+ * - 默认输出到 release/chrome-extension/ui。
+ * - 若设置环境变量 REGEXP_REPLACER_CHROME_RELEASE_DIR，则输出到 release/<dir>/ui。
  */
 export default defineConfig({
   root: __dirname,
@@ -18,7 +19,13 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   build: {
-    outDir: path.resolve(__dirname, '..', 'release', 'chrome-extension', 'ui'),
+    outDir: path.resolve(
+      __dirname,
+      '..',
+      'release',
+      process.env.REGEXP_REPLACER_CHROME_RELEASE_DIR || 'chrome-extension',
+      'ui',
+    ),
     emptyOutDir: true,
     sourcemap: false,
   },
