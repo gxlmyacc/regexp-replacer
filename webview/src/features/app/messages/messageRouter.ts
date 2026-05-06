@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { ReplaceCommand } from '../../../../../../src/types';
 import type { WebviewResponse } from '../../../bridge/vscodeApi';
+import type { LanguageCode } from '../../../i18n';
 import { normalizeCommandTitles, sanitizeCommandsPayload, isPristineUntitledDraft, isUntitledCommandTitle } from '../../../utils';
 
 export type MessageRouterDeps = {
@@ -39,6 +40,10 @@ export type MessageRouterDeps = {
    * 创建未命名草稿命令（仅首次打开面板自动补回）。
    */
   createDraftCommand: (untitledTitle: string) => ReplaceCommand;
+  /**
+   * 当前界面语言（ref）：用于解析配置/种子数据中的双语标题与描述。
+   */
+  uiLocaleRef: React.MutableRefObject<LanguageCode>;
 };
 
 /**
@@ -67,6 +72,7 @@ export function useMessageRouter(deps: MessageRouterDeps): void {
     initialUntitledEnsuredRef,
     draftIdRef,
     createDraftCommand,
+    uiLocaleRef,
   } = deps;
 
   const getUntitledTitleRef = useRef(getUntitledTitle);
@@ -80,7 +86,7 @@ export function useMessageRouter(deps: MessageRouterDeps): void {
       if (!msg || typeof msg !== 'object') return;
       if (msg.type !== 'config') return;
 
-      const list = sanitizeCommandsPayload((msg as any).payload);
+      const list = sanitizeCommandsPayload((msg as any).payload, { locale: uiLocaleRef.current });
       autoCreatedRef.current = true;
       savedSnapshotRef.current = structuredClone(list) as ReplaceCommand[];
 
@@ -123,7 +129,7 @@ export function useMessageRouter(deps: MessageRouterDeps): void {
     window.addEventListener('message', onMessage);
     vscodeApi.postMessage({ type: 'getConfig' });
     return () => window.removeEventListener('message', onMessage);
-  }, [autoCreatedRef, commandsRef, createDraftCommand, draftIdRef, initialUntitledEnsuredRef, savedSnapshotRef, selectedIdRef, setCommands, setSelectedId, vscodeApi]);
+  }, [autoCreatedRef, commandsRef, createDraftCommand, draftIdRef, initialUntitledEnsuredRef, savedSnapshotRef, selectedIdRef, setCommands, setSelectedId, uiLocaleRef, vscodeApi]);
 
   useEffect(() => {
     const nextSelectedId = pendingAutoSelectIdRef.current;

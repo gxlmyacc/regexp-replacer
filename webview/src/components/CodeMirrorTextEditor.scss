@@ -7,8 +7,8 @@
 }
 
 .editorHost .cm-scroller {
-  font-family: var(--vscode-editor-font-family);
-  font-size: var(--vscode-editor-font-size);
-  line-height: var(--vscode-editor-line-height);
+  font-family: var(--vscode-editor-font-family, Consolas, monospace);
+  font-size: var(--rr-editor-font-size);
+  line-height: var(--vscode-editor-line-height, 1.5);
 }
 

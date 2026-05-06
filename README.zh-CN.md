@@ -2,6 +2,12 @@
 
 为 VS Code 提供可复用的 **正则 / 文本 / 通配符** 替换命令。
 
+## 界面预览
+
+**RegExp UI** Webview：左侧为命令列表，右侧为规则编辑器（表达式、flags、前置/后置 hook）、测试编辑器，以及底部工具区的替换预览、列表、详情、解释等。
+
+![RegExp UI](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/ui.png)
+
 ## 功能
 
 - **在文件中替换**：对当前活动编辑器文档执行已配置的替换命令。

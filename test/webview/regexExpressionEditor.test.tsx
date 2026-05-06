@@ -33,6 +33,46 @@ function unmount(host: HTMLDivElement): void {
 }
 
 describe('RegexExpressionEditor', () => {
+  /**
+   * 统计编辑器内容区内错误装饰节点数量。
+   *
+   * @param host 挂载容器。
+   * @returns 含 rrRegexTok--error 的节点数。
+   */
+  function countRegexErrorMarks(host: HTMLElement): number {
+    const root = host.querySelector('.cm-content');
+    if (!root) return 0;
+    return root.querySelectorAll('.rrRegexTok--error').length;
+  }
+
+  test('[]、[ ^ ] 不产生括号未匹配装饰（与 regexBracketScan 一致）', () => {
+    for (const value of ['[]', '[^]']) {
+      const host = mount(
+        <I18nProvider>
+          <RegexExpressionEditor value={value} uiLanguage="zh-CN" onChange={() => {}} onAfterChange={() => {}} />
+        </I18nProvider>,
+      );
+      try {
+        expect(countRegexErrorMarks(host)).toBe(0);
+      } finally {
+        unmount(host);
+      }
+    }
+  });
+
+  test('未闭合 ( 时出现错误下划线装饰', () => {
+    const host = mount(
+      <I18nProvider>
+        <RegexExpressionEditor value="(" uiLanguage="zh-CN" onChange={() => {}} onAfterChange={() => {}} />
+      </I18nProvider>,
+    );
+    try {
+      expect(countRegexErrorMarks(host)).toBeGreaterThan(0);
+    } finally {
+      unmount(host);
+    }
+  });
+
   test('通过 EditorView.dispatch 触发 onChange，并在 selectionSet 时执行括号配对逻辑', () => {
     const onChange = vi.fn<(v: string) => void>();
     const onAfterChange = vi.fn();

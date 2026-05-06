@@ -14,7 +14,7 @@
   border-radius: 4px;
   outline: none;
   font-family: var(--vscode-editor-font-family, Consolas, monospace);
-  font-size: 12.5px;
+  font-size: var(--rr-editor-font-size);
   overflow: hidden;
 }
 

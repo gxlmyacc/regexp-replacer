@@ -114,13 +114,30 @@
   font-weight: 900;
 }
 
+/* 错误波浪线：underline-offset 过大时，装饰落在 CodeMirror coordsAtPos 的矩形下方，
+ * hoverTooltip 会认定指针不在文本内而不触发气泡；略减偏移并垫高命中区。 */
 .rrRegexTok--error {
   text-decoration-line: underline;
   text-decoration-style: dashed;
   text-decoration-color: var(--vscode-errorForeground, #f14c4c);
   text-decoration-thickness: 1px;
-  text-underline-offset: 6px;
+  text-underline-offset: 2px;
   text-decoration-skip-ink: none;
+  padding-bottom: 6px;
+}
+
+/* 正则错误提示 Tooltip：替代浏览器 title 气泡，保持与 VS Code 配色一致。 */
+.regexExpressionEditor .cm-tooltip .rrRegexTooltip {
+  max-width: 420px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  line-height: 1.35;
+  color: var(--vscode-editorHoverWidget-foreground, #cccccc);
+  background: var(--vscode-editorHoverWidget-background, #252526);
+  border: 1px solid var(--vscode-editorHoverWidget-border, rgba(255, 255, 255, 0.12));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .rrRegexTok--quant {

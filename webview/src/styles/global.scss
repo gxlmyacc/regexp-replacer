@@ -1,5 +1,17 @@
 /* 全局样式：主题变量兜底、布局基础与滚动条。 */
 :root {
+  /*
+   * 浏览器独立打开（无 VS Code 注入）时使用流体字号，略随视口变化（上限压低，接近 VS Code 默认 13px）；
+   * Webview 内 --vscode-font-size / --vscode-editor-font-size 存在则优先采用。
+   */
+  --rr-standalone-font-size: clamp(13px, 0.2vw + 11.75px, 16px);
+  --rr-standalone-editor-font-size: clamp(12.5px, 0.16vw + 11.35px, 15.5px);
+  --rr-ui-font-size: var(--vscode-font-size, var(--rr-standalone-font-size));
+  --rr-editor-font-size: var(
+    --vscode-editor-font-size,
+    var(--vscode-font-size, var(--rr-standalone-editor-font-size))
+  );
+
   /* dev 环境（浏览器打开 Vite 页面）下没有 VS Code 注入的主题变量，这里给出暗色默认值兜底 */
   --rr-foreground: #d4d4d4;
   --rr-editor-background: #1e1e1e;
@@ -26,7 +38,7 @@
   color: var(--vscode-foreground, var(--rr-foreground));
   background: var(--vscode-editor-background, var(--rr-editor-background));
   font-family: var(--vscode-font-family, system-ui, -apple-system, Segoe UI, Arial, sans-serif);
-  font-size: var(--vscode-font-size, 13px);
+  font-size: var(--rr-ui-font-size);
 }
 
 * {

@@ -29,18 +29,18 @@
 .rrInput--default .rrInput__control,
 .rrInput--default .rrInput__overlay {
   font-family: var(--vscode-font-family, system-ui, sans-serif);
-  font-size: var(--vscode-font-size, 13px);
+  font-size: var(--rr-ui-font-size);
 }
 
 .rrInput--mono .rrInput__control,
 .rrInput--mono .rrInput__overlay {
   font-family: var(--vscode-editor-font-family, Consolas, monospace);
-  font-size: 12px;
+  font-size: var(--rr-editor-font-size);
 }
 
 .rrInput--mono.rrInput--multiline .rrInput__control,
 .rrInput--mono.rrInput--multiline .rrInput__overlay {
-  font-size: 12.5px;
+  font-size: var(--rr-editor-font-size);
 }
 
 .rrInput .rrInput__control {

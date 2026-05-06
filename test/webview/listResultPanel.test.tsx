@@ -4,22 +4,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { ListResultPanel } from '../../webview/src/components/ListResultPanel';
 
 describe('ListResultPanel', () => {
-  /**
-   * 为 JSDOM 注入最小 ResizeObserver，满足 VirtualList 的依赖。
-   *
-   * @returns 无返回值。
-   */
-  function ensureResizeObserver(): void {
-    (globalThis as any).ResizeObserver =
-      (globalThis as any).ResizeObserver ??
-      class ResizeObserver {
-        observe() {}
-        disconnect() {}
-      };
-  }
-
   test('超出 maxItems 会触发截断回调（仅一次）', () => {
-    ensureResizeObserver();
     const onTruncated = vi.fn();
     const matches = Array.from({ length: 5 }, (_, i) => ({ matchText: `m${i}` }));
     const host = document.createElement('div');
@@ -36,8 +21,24 @@ describe('ListResultPanel', () => {
     }
   });
 
+  test('多行 matchText 按自然行高展示', () => {
+    const matches = [{ matchText: '00:00:01,000 --> 00:00:02,000\nう\n唔' }];
+    const host = document.createElement('div');
+    host.style.height = '200px';
+    document.body.appendChild(host);
+    try {
+      ReactDOM.render(<ListResultPanel matches={matches as any} maxItems={10} />, host);
+      const cell = host.querySelector('.listRowText');
+      expect(cell).not.toBeNull();
+      expect(cell?.textContent).toContain('00:00:01');
+      expect(cell?.textContent).toContain('唔');
+    } finally {
+      ReactDOM.unmountComponentAtNode(host);
+      host.remove();
+    }
+  });
+
   test('Ctrl+A 会触发 onCtrlA', () => {
-    ensureResizeObserver();
     const onCtrlA = vi.fn();
     const matches = [{ matchText: 'x' }];
     const host = document.createElement('div');
@@ -53,4 +54,3 @@ describe('ListResultPanel', () => {
     }
   });
 });
-

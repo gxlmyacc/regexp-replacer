@@ -31,6 +31,7 @@ describe('messageRouter', () => {
     const autoCreatedRef = { current: false };
     const initialUntitledEnsuredRef = { current: false };
     const draftIdRef = { current: undefined as string | undefined };
+    const uiLocaleRef = { current: 'en' as const };
 
     function Harness(): React.ReactElement {
       useMessageRouter({
@@ -55,6 +56,7 @@ describe('messageRouter', () => {
         initialUntitledEnsuredRef: initialUntitledEnsuredRef as any,
         draftIdRef: draftIdRef as any,
         createDraftCommand,
+        uiLocaleRef: uiLocaleRef as any,
       });
       return <div />;
     }
@@ -100,6 +102,7 @@ describe('messageRouter', () => {
     const autoCreatedRef = { current: false };
     const initialUntitledEnsuredRef = { current: true };
     const draftIdRef = { current: undefined as string | undefined };
+    const uiLocaleRef = { current: 'en' as const };
 
     function Harness(): React.ReactElement {
       useMessageRouter({
@@ -120,6 +123,7 @@ describe('messageRouter', () => {
         initialUntitledEnsuredRef: initialUntitledEnsuredRef as any,
         draftIdRef: draftIdRef as any,
         createDraftCommand,
+        uiLocaleRef: uiLocaleRef as any,
       });
       return <div />;
     }

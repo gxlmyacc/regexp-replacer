@@ -15,6 +15,19 @@ describe('webview replacePreview', () => {
     expect(res.previewParts.length).toBe(1);
   });
 
+  test('collectHighlightParts:false 不写入 previewParts，但 previewText 与全文一致', () => {
+    const res = computeReplacePreview(
+      { engine: 'regex', find: '(\\d+)', replace: '', flags: 'g' },
+      'a1 b22',
+      'N($1)',
+      { maxPreviewChars: 1000, collectHighlightParts: false },
+    );
+    expect(res.replacedCount).toBe(2);
+    expect(res.fullText).toBe('aN(1) bN(22)');
+    expect(res.previewText).toBe('aN(1) bN(22)');
+    expect(res.previewParts.length).toBe(0);
+  });
+
   test('regex replace: previewParts mark replaced segments', () => {
     const res = computeReplacePreview(
       { engine: 'regex', find: '(\\d+)', replace: '', flags: 'g' },

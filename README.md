@@ -2,6 +2,12 @@
 
 Reusable **regex / text / wildcard** replacement commands for VS Code.
 
+## UI preview
+
+The **RegExp UI** webview: command list on the left, rule editor (expression, flags, hooks), test editor, and replace preview / list / details / explain tools.
+
+![RegExp UI](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/ui.png)
+
 ## Features
 
 - **Replace in File**: run a configured replacement command on the active editor document.

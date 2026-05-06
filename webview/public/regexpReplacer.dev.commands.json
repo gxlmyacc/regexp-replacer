@@ -1,11 +1,20 @@
 [
   {
     "id": "dev_sample_01",
-    "title": "Demo: 数字加前缀",
-    "description": "把连续数字前面加上 #。",
+    "title": {
+      "en": "Demo: Prefix digits",
+      "zh-CN": "Demo: 数字加前缀"
+    },
+    "description": {
+      "en": "Add # before each run of digits.",
+      "zh-CN": "把连续数字前面加上 #。"
+    },
     "rules": [
       {
-        "name": "数字加前缀",
+        "title": {
+          "en": "Prefix digits",
+          "zh-CN": "数字加前缀"
+        },
         "engine": "regex",
         "find": "\\d+",
         "replace": "#$&",
@@ -16,8 +25,14 @@
   },
   {
     "id": "dev_sample_02",
-    "title": "Demo: 文本替换",
-    "description": "把 foo 替换为 bar。",
+    "title": {
+      "en": "Demo: Text replace",
+      "zh-CN": "Demo: 文本替换"
+    },
+    "description": {
+      "en": "Replace foo with bar.",
+      "zh-CN": "把 foo 替换为 bar。"
+    },
     "rules": [
       {
         "engine": "text",
@@ -28,8 +43,14 @@
   },
   {
     "id": "dev_sample_03",
-    "title": "Demo: 通配符替换",
-    "description": "把 a*?b 这种模式替换为 X。",
+    "title": {
+      "en": "Demo: Wildcard replace",
+      "zh-CN": "Demo: 通配符替换"
+    },
+    "description": {
+      "en": "Replace patterns like a*?b with X.",
+      "zh-CN": "把 a*?b 这种模式替换为 X。"
+    },
     "rules": [
       {
         "engine": "wildcard",
@@ -43,8 +64,14 @@
   },
   {
     "id": "dev_sample_04",
-    "title": "Demo: 去掉行尾空格",
-    "description": "删除每行末尾的空格与制表符。",
+    "title": {
+      "en": "Demo: Trim trailing spaces",
+      "zh-CN": "Demo: 去掉行尾空格"
+    },
+    "description": {
+      "en": "Remove spaces and tabs at the end of each line.",
+      "zh-CN": "删除每行末尾的空格与制表符。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -57,8 +84,14 @@
   },
   {
     "id": "dev_sample_05",
-    "title": "Demo: 统一换行（CRLF -> LF）",
-    "description": "把 Windows 换行 \\r\\n 统一为 \\n。",
+    "title": {
+      "en": "Demo: Normalize newlines (CRLF → LF)",
+      "zh-CN": "Demo: 统一换行（CRLF -> LF）"
+    },
+    "description": {
+      "en": "Convert Windows line breaks \\r\\n to \\n.",
+      "zh-CN": "把 Windows 换行 \\r\\n 统一为 \\n。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -71,8 +104,14 @@
   },
   {
     "id": "dev_sample_06",
-    "title": "Demo: 合并多余空行",
-    "description": "将连续 3 行及以上的空行压缩为 2 行。",
+    "title": {
+      "en": "Demo: Collapse extra blank lines",
+      "zh-CN": "Demo: 合并多余空行"
+    },
+    "description": {
+      "en": "Compress 3+ consecutive blank lines to 2.",
+      "zh-CN": "将连续 3 行及以上的空行压缩为 2 行。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -85,8 +124,14 @@
   },
   {
     "id": "dev_sample_07",
-    "title": "Demo: 驼峰转短横线",
-    "description": "把 fooBarBaz 转为 foo-bar-baz（仅演示简单规则）。",
+    "title": {
+      "en": "Demo: camelCase to kebab-case",
+      "zh-CN": "Demo: 驼峰转短横线"
+    },
+    "description": {
+      "en": "Turn fooBarBaz into foo-bar-baz (simple demo).",
+      "zh-CN": "把 fooBarBaz 转为 foo-bar-baz（仅演示简单规则）。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -106,8 +151,14 @@
   },
   {
     "id": "dev_sample_08",
-    "title": "Demo: 邮箱脱敏",
-    "description": "把邮箱 user@example.com 脱敏为 u***@example.com。",
+    "title": {
+      "en": "Demo: Mask emails",
+      "zh-CN": "Demo: 邮箱脱敏"
+    },
+    "description": {
+      "en": "Mask user@example.com as u***@example.com.",
+      "zh-CN": "把邮箱 user@example.com 脱敏为 u***@example.com。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -120,8 +171,14 @@
   },
   {
     "id": "dev_sample_09",
-    "title": "Demo: JSON Key 加引号",
-    "description": "将 {a:1, b:2} 的 key 变为 {\"a\":1, \"b\":2}（简化版）。",
+    "title": {
+      "en": "Demo: Quote JSON keys",
+      "zh-CN": "Demo: JSON Key 加引号"
+    },
+    "description": {
+      "en": "Turn {a:1, b:2} keys into {\"a\":1, \"b\":2} (simplified).",
+      "zh-CN": "将 {a:1, b:2} 的 key 变为 {\"a\":1, \"b\":2}（简化版）。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -134,8 +191,14 @@
   },
   {
     "id": "dev_sample_10",
-    "title": "Demo: Markdown 链接提取文本",
-    "description": "把 [text](url) 替换为 text。",
+    "title": {
+      "en": "Demo: Markdown link to text",
+      "zh-CN": "Demo: Markdown 链接提取文本"
+    },
+    "description": {
+      "en": "Replace [text](url) with text.",
+      "zh-CN": "把 [text](url) 替换为 text。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -148,8 +211,14 @@
   },
   {
     "id": "dev_sample_11",
-    "title": "Demo: 逗号后补空格",
-    "description": "把 a,b,c 变为 a, b, c（不处理换行场景）。",
+    "title": {
+      "en": "Demo: Space after comma",
+      "zh-CN": "Demo: 逗号后补空格"
+    },
+    "description": {
+      "en": "Turn a,b,c into a, b, c (does not handle newlines).",
+      "zh-CN": "把 a,b,c 变为 a, b, c（不处理换行场景）。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -162,8 +231,14 @@
   },
   {
     "id": "dev_sample_12",
-    "title": "Demo: 删除 HTML 注释",
-    "description": "移除 <!-- ... --> 注释块（非贪婪）。",
+    "title": {
+      "en": "Demo: Strip HTML comments",
+      "zh-CN": "Demo: 删除 HTML 注释"
+    },
+    "description": {
+      "en": "Remove <!-- ... --> blocks (non-greedy).",
+      "zh-CN": "移除 <!-- ... --> 注释块（非贪婪）。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -176,8 +251,14 @@
   },
   {
     "id": "dev_sample_13",
-    "title": "Demo: 提取双引号内容",
-    "description": "将 \"abc\" 变为 abc（支持转义的简化版）。",
+    "title": {
+      "en": "Demo: Unquote double-quoted strings",
+      "zh-CN": "Demo: 提取双引号内容"
+    },
+    "description": {
+      "en": "Turn \"abc\" into abc (simple escapes).",
+      "zh-CN": "将 \"abc\" 变为 abc（支持转义的简化版）。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -190,8 +271,14 @@
   },
   {
     "id": "dev_sample_14",
-    "title": "Demo: 去掉 UTF-8 BOM",
-    "description": "删除文本开头的 \\uFEFF（BOM）。",
+    "title": {
+      "en": "Demo: Remove UTF-8 BOM",
+      "zh-CN": "Demo: 去掉 UTF-8 BOM"
+    },
+    "description": {
+      "en": "Remove leading \\uFEFF (BOM).",
+      "zh-CN": "删除文本开头的 \\uFEFF（BOM）。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -204,8 +291,14 @@
   },
   {
     "id": "dev_sample_15",
-    "title": "Demo: 批量注释掉 console.log",
-    "description": "将 console.log(...) 变为 // console.log(...)（简化版，按行处理）。",
+    "title": {
+      "en": "Demo: Comment out console.log",
+      "zh-CN": "Demo: 批量注释掉 console.log"
+    },
+    "description": {
+      "en": "Turn console.log(...) into // console.log(...) (per-line, simplified).",
+      "zh-CN": "将 console.log(...) 变为 // console.log(...)（简化版，按行处理）。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -218,8 +311,14 @@
   },
   {
     "id": "dev_sample_16",
-    "title": "Demo: 去掉 import 的未用空行",
-    "description": "将连续空行压缩为单空行（常用于整理 import 区块）。",
+    "title": {
+      "en": "Demo: Collapse blank lines after imports",
+      "zh-CN": "Demo: 去掉 import 的未用空行"
+    },
+    "description": {
+      "en": "Collapse multiple blank lines to one (useful after import blocks).",
+      "zh-CN": "将连续空行压缩为单空行（常用于整理 import 区块）。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -232,8 +331,14 @@
   },
   {
     "id": "dev_sample_17",
-    "title": "Demo: 统一引号（' -> \")",
-    "description": "把单引号字符串替换为双引号字符串（简化版，不处理复杂转义）。",
+    "title": {
+      "en": "Demo: Normalize quotes (' → \")",
+      "zh-CN": "Demo: 统一引号（' -> \"）"
+    },
+    "description": {
+      "en": "Replace single-quoted strings with double-quoted (simplified; no complex escapes).",
+      "zh-CN": "把单引号字符串替换为双引号字符串（简化版，不处理复杂转义）。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -246,8 +351,14 @@
   },
   {
     "id": "dev_sample_18",
-    "title": "Demo: 路径分隔符（\\\\ -> /）",
-    "description": "把 Windows 路径分隔符反斜杠替换为正斜杠。",
+    "title": {
+      "en": "Demo: Path separators (\\\\ → /)",
+      "zh-CN": "Demo: 路径分隔符（\\\\ -> /）"
+    },
+    "description": {
+      "en": "Replace Windows path backslashes with forward slashes.",
+      "zh-CN": "把 Windows 路径分隔符反斜杠替换为正斜杠。"
+    },
     "rules": [
       {
         "engine": "regex",
@@ -259,4 +370,3 @@
     ]
   }
 ]
-

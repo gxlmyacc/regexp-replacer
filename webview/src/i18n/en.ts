@@ -95,7 +95,7 @@ export const en = {
   nameReservedChars: 'Name cannot contain reserved characters: <>[]',
   ruleTitleReservedChars: 'Rule title cannot contain reserved characters: <>[]',
   addRuleFirst: 'No savable rule in current command. Please add a rule expression first.',
-  commandListTitle: 'Commands({n})',
+  commandListTitle: 'List ({n})',
   import: 'Import',
   export: 'Export',
   importOk: 'Imported.',
@@ -119,6 +119,9 @@ export const en = {
   hookMax3: 'You can select up to 3 commands.',
   hookAlreadySelected: 'Already selected.',
   emptyText: '(empty)',
+  replacePreviewHighlightChip: 'Highlight',
+  replaceResultHighlightTip:
+    'Click to toggle: selected highlights replaced spans in the Replace tab; unselected shows plain preview (often faster on large input).',
   flagG: 'g: global matching (affects match/replace scope)',
   flagI: 'i: ignore case',
   flagM: 'm: multiline (^/$ match line boundaries)',

@@ -1,9 +1,10 @@
 import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { EditorView, keymap, placeholder, type ViewUpdate } from '@codemirror/view';
+import { EditorView, hoverTooltip, keymap, placeholder, tooltips, type Tooltip, type ViewUpdate } from '@codemirror/view';
 import { Compartment, EditorState, RangeSetBuilder } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { Decoration, ViewPlugin } from '@codemirror/view';
 import { tokenizeRegexPattern, type RegexTokenType } from '../utils';
+import { collectBracketDiagnostics, collectBracketPairs } from '../utils/regexBracketScan';
 import type { LanguageCode } from '../i18n';
 import './RegexExpressionEditor.scss';
 
@@ -53,7 +54,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
           borderRadius: '4px',
           outline: 'none',
           fontFamily: 'var(--vscode-editor-font-family, Consolas, monospace)',
-          fontSize: '12.5px',
+          fontSize: 'var(--rr-editor-font-size)',
         },
         '&.cm-focused': {
           borderColor: 'var(--rr-focus-border, var(--rr-input-focused-border))',
@@ -148,13 +149,11 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
        * @param from 起始偏移（含）。
        * @param to 结束偏移（不含）。
        * @param className 样式类名。
-       * @param title 可选提示文本（用于悬停错误提示）。
        * @returns 无返回值。
        */
-      function pushMark(from: number, to: number, className: string, title?: string): void {
+      function pushMark(from: number, to: number, className: string): void {
         if (to <= from) return;
-        const attributes = title ? { title, 'aria-label': title } : undefined;
-        pendingMarks.push({ from, to, mark: Decoration.mark({ class: className, attributes }) });
+        pendingMarks.push({ from, to, mark: Decoration.mark({ class: className }) });
       }
 
       if (activeInnerRange) {
@@ -206,7 +205,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       }
       const diagnostics = collectRegexDiagnostics(text);
       for (const d of diagnostics) {
-        pushMark(d.from, d.to, 'rrRegexTok rrRegexTok--error', d.message);
+        pushMark(d.from, d.to, 'rrRegexTok rrRegexTok--error');
       }
       pendingMarks
         .sort((a, b) => (a.from === b.from ? a.to - b.to : a.from - b.from))
@@ -276,91 +275,6 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     }
 
     /**
-     * 收集所有可配对括号的层级信息（支持 ()、[]、{}，忽略转义字符）。
-     *
-     * @param text 正则文本。
-     * @returns 括号对数组（包含层级）。
-     */
-    function collectBracketPairs(
-      text: string,
-    ): { openOffset: number; closeOffset: number; depth: number; kind: 'round' | 'square' | 'curly' }[] {
-      const stacks = {
-        round: [] as { openOffset: number; depth: number }[],
-        square: [] as { openOffset: number; depth: number }[],
-        curly: [] as { openOffset: number; depth: number }[],
-      };
-      const pairs: { openOffset: number; closeOffset: number; depth: number; kind: 'round' | 'square' | 'curly' }[] = [];
-      let escaped = false;
-      let inCharClass = false;
-      let charClassOpenOffset = -1;
-
-      for (let i = 0; i < text.length; i += 1) {
-        const ch = text[i];
-        if (escaped) {
-          escaped = false;
-          continue;
-        }
-        if (ch === '\\') {
-          escaped = true;
-          continue;
-        }
-
-        // 字符类 [...] 内部的 () {} [] 都按字面量处理，不参与配对。
-        // 仅在遇到真正闭合的 ] 时退出字符类。
-        if (inCharClass) {
-          if (ch === ']') {
-            const isFirst = i === charClassOpenOffset + 1;
-            const isFirstAfterCaret = text[charClassOpenOffset + 1] === '^' && i === charClassOpenOffset + 2;
-            if (isFirst || isFirstAfterCaret) continue; // ']' 作为字面量
-            const top = stacks.square.pop();
-            if (top) {
-              pairs.push({ openOffset: top.openOffset, closeOffset: i, depth: top.depth, kind: 'square' });
-            }
-            inCharClass = false;
-            charClassOpenOffset = -1;
-          }
-          continue;
-        }
-
-        if (ch === '(') {
-          stacks.round.push({ openOffset: i, depth: stacks.round.length + 1 });
-          continue;
-        }
-        if (ch === ')') {
-          const top = stacks.round.pop();
-          if (top) {
-            pairs.push({ openOffset: top.openOffset, closeOffset: i, depth: top.depth, kind: 'round' });
-          }
-          continue;
-        }
-        if (ch === '[') {
-          stacks.square.push({ openOffset: i, depth: stacks.square.length + 1 });
-          inCharClass = true;
-          charClassOpenOffset = i;
-          continue;
-        }
-        if (ch === ']') {
-          const top = stacks.square.pop();
-          if (top) {
-            pairs.push({ openOffset: top.openOffset, closeOffset: i, depth: top.depth, kind: 'square' });
-          }
-          continue;
-        }
-        if (ch === '{') {
-          stacks.curly.push({ openOffset: i, depth: stacks.curly.length + 1 });
-          continue;
-        }
-        if (ch === '}') {
-          const top = stacks.curly.pop();
-          if (top) {
-            pairs.push({ openOffset: top.openOffset, closeOffset: i, depth: top.depth, kind: 'curly' });
-          }
-        }
-      }
-      return pairs;
-    }
-
-    /**
      * 构建括号偏移到层级的映射，用于按层级上色。
      *
      * @param text 正则文本。
@@ -390,82 +304,6 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       // 若已定位到具体括号错误，优先展示“精确定位”的下划线，不再叠加整段错误线。
       if (syntaxMessage && text.length > 0 && bracketDiagnostics.length === 0) {
         out.push({ from: 0, to: text.length, message: syntaxMessage });
-      }
-      return out;
-    }
-
-    /**
-     * 收集括号配对诊断（支持 ()、[]、{}，忽略转义字符）。
-     *
-     * @param text 正则文本。
-     * @returns 括号诊断列表。
-     */
-    function collectBracketDiagnostics(text: string): { from: number; to: number; message: string }[] {
-      const out: { from: number; to: number; message: string }[] = [];
-      const stack: { ch: '(' | '[' | '{'; offset: number }[] = [];
-      const closeToOpen: Record<string, '(' | '[' | '{'> = { ')': '(', ']': '[', '}': '{' };
-      let escaped = false;
-      let inCharClass = false;
-      let charClassOpenOffset = -1;
-
-      for (let i = 0; i < text.length; i += 1) {
-        const ch = text[i] as string;
-        if (escaped) {
-          escaped = false;
-          continue;
-        }
-        if (ch === '\\') {
-          escaped = true;
-          continue;
-        }
-
-        // 字符类 [...] 内部的括号都按字面量处理，不参与“括号匹配诊断”。
-        if (inCharClass) {
-          if (ch === ']') {
-            const isFirst = i === charClassOpenOffset + 1;
-            const isFirstAfterCaret = text[charClassOpenOffset + 1] === '^' && i === charClassOpenOffset + 2;
-            if (isFirst || isFirstAfterCaret) continue;
-            const top = stack[stack.length - 1];
-            if (top?.ch === '[') stack.pop();
-            inCharClass = false;
-            charClassOpenOffset = -1;
-          }
-          continue;
-        }
-
-        if (ch === '(' || ch === '[' || ch === '{') {
-          stack.push({ ch, offset: i });
-          if (ch === '[') {
-            inCharClass = true;
-            charClassOpenOffset = i;
-          }
-          continue;
-        }
-        if (ch === ')' || ch === ']' || ch === '}') {
-          const expected = closeToOpen[ch];
-          const top = stack[stack.length - 1];
-          if (!top) {
-            out.push({ from: i, to: i + 1, message: `未匹配的右括号 ${ch}` });
-            continue;
-          }
-          if (top.ch !== expected) {
-            out.push({
-              from: i,
-              to: i + 1,
-              message: `括号不匹配：期望 ${top.ch === '(' ? ')' : top.ch === '[' ? ']' : '}'}，实际为 ${ch}`,
-            });
-            stack.pop();
-            continue;
-          }
-          stack.pop();
-        }
-      }
-      for (const item of stack) {
-        out.push({
-          from: item.offset,
-          to: item.offset + 1,
-          message: `未匹配的左括号 ${item.ch}`,
-        });
       }
       return out;
     }
@@ -526,7 +364,34 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       console.debug('[RegexExpressionEditor]', tag, payload);
     }
 
+    /**
+     * 基于诊断信息提供悬浮提示：当鼠标悬停到错误下划线范围时，显示错误消息 Tooltip。
+     *
+     * @returns CodeMirror 扩展（hoverTooltip）。
+     */
+    function createDiagnosticsHoverTooltip() {
+      return hoverTooltip((view, pos): Tooltip | null => {
+        const text = view.state.doc.toString();
+        const diagnostics = collectRegexDiagnostics(text);
+        const hit = diagnostics.find((d) => d.from <= pos && pos <= d.to);
+        if (!hit) return null;
+        return {
+          pos: hit.from,
+          end: hit.to,
+          above: true,
+          create() {
+            const dom = document.createElement('div');
+            dom.className = 'rrRegexTooltip';
+            dom.textContent = hit.message;
+            return { dom };
+          },
+        };
+      });
+    }
+
     return [
+      /* Tooltip 根挂在 body，避免落在 .cm-editor/.cm-scroller 内被 overflow 裁切 */
+      tooltips({ parent: document.body }),
       history(),
       keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
       ph ? placeholder(ph) : [],
@@ -534,6 +399,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       EditorView.lineWrapping,
       vscodeTheme,
       tokenHighlight,
+      createDiagnosticsHoverTooltip(),
       updateListener,
     ];
   }, [onAfterChange, onChange, ph, uiLanguage]);

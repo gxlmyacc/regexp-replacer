@@ -11,6 +11,11 @@ export type ReplacePreviewResult = {
 
 export type ReplacePreviewOptions = {
   maxPreviewChars: number;
+  /**
+   * 为 false 时不收集 `previewParts`（仍生成 `previewText` / `fullText`），大文本下可减少对象分配。
+   * 默认 true。
+   */
+  collectHighlightParts?: boolean;
 };
 
 /**
@@ -19,7 +24,7 @@ export type ReplacePreviewOptions = {
  * @param rule 当前规则。
  * @param input 输入文本。
  * @param replacementTemplate 替换模板（String.replace 语法）。
- * @param opts 预览选项（最大预览字符数）。
+ * @param opts 预览选项（最大预览字符数、是否生成分段高亮数据）。
  * @returns 预览结果（包含全量与截断预览）。
  */
 export function computeReplacePreview(
@@ -29,12 +34,14 @@ export function computeReplacePreview(
   opts: ReplacePreviewOptions,
 ): ReplacePreviewResult {
   const maxChars = Math.max(0, opts.maxPreviewChars);
+  const collectHighlightParts = opts.collectHighlightParts !== false;
 
   // 空文本或空表达式时不做替换预览，避免空匹配导致性能问题或“全被替换为空”的误导。
   const find = (rule.find ?? '').toString();
   if (!input || !find) {
     const previewText = input.length <= maxChars ? input : `${input.slice(0, maxChars)}…`;
-    const previewParts = previewText ? [{ text: previewText, replaced: false }] : [];
+    const previewParts =
+      collectHighlightParts && previewText ? [{ text: previewText, replaced: false }] : [];
     return { replacedCount: 0, previewText, previewParts, fullText: input };
   }
 
@@ -44,6 +51,7 @@ export function computeReplacePreview(
   let truncated = false;
   let outLen = 0;
   let lastIdx = 0;
+  let previewTextAcc = '';
 
   const fullParts: string[] = [];
   const previewParts: { text: string; replaced: boolean }[] = [];
@@ -119,7 +127,10 @@ export function computeReplacePreview(
       return;
     }
     const slice = text.length <= remain ? text : text.slice(0, remain);
-    if (slice) previewParts.push({ text: slice, replaced });
+    if (slice) {
+      previewTextAcc += slice;
+      if (collectHighlightParts) previewParts.push({ text: slice, replaced });
+    }
     outLen += slice.length;
     if (text.length > remain) truncated = true;
   }
@@ -171,7 +182,7 @@ export function computeReplacePreview(
   if (truncated) pushPreview('…', false);
 
   const fullText = fullParts.join('');
-  const previewText = previewParts.map((p) => p.text).join('');
+  const previewText = previewTextAcc;
 
   return { replacedCount, previewText, previewParts, fullText };
 }

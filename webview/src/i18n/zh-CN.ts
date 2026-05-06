@@ -124,6 +124,10 @@ export const zhCN = {
   hookMax3: '最多只能选择 3 个命令。',
   hookAlreadySelected: '已选择，该命令不可重复选择。',
   emptyText: '（空）',
+  /** 替换页：高亮开关 chip 的固定标签（开/关由 chip 激活样式与 aria-pressed 表示）。 */
+  replacePreviewHighlightChip: '高亮',
+  replaceResultHighlightTip:
+    '点击切换：选中后在替换结果中高亮被替换片段；未选中则仅纯文本预览，大文本下开销更低。',
   flagG: 'g：全局匹配（影响匹配与替换范围）',
   flagI: 'i：忽略大小写',
   flagM: 'm：多行模式（^/$ 匹配每行行首/行尾）',

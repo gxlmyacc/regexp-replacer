@@ -1,5 +1,44 @@
-.replacePreviewRich {
+/* 带行号布局时由 toolsPreview 继承的 pre-wrap 会破坏多行网格，故仅在正文列保留 pre-wrap */
+.replaceResultBox.replaceResultBox--lined {
+  white-space: normal;
+}
+
+.replaceResultBox__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.replaceResultBox__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  align-items: flex-start;
+}
+
+.replaceResultBox__gutter {
+  text-align: right;
+  color: var(--vscode-editorLineNumber-foreground, rgba(140, 140, 140, 0.85));
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  padding-right: 10px;
+  border-right: 1px solid var(--vscode-panel-border, var(--rr-panel-border));
+  box-sizing: border-box;
+  line-height: 1.45;
+}
+
+.replaceResultBox__lineMain {
   white-space: pre-wrap;
+  word-break: break-word;
+  min-width: 0;
+  line-height: 1.45;
+}
+
+/* Replace 结果盒：行号列 + 正文列（与 toolsPreview 组合使用）。 */
+
+.replacePreviewRich {
+  white-space: inherit;
 }
 
 .replacePreviewHit {

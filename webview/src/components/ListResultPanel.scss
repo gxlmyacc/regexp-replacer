@@ -1,19 +1,37 @@
 .listResultPanel {
   padding: 0;
-  overflow: hidden; /* 内部 VirtualList 自己滚动，避免双滚动条 */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
   outline: none;
 }
 
-.listVirtualHost {
+/* 列表区域自行滚动（非虚拟列表，每条自然高度） */
+.listResultScroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
   height: 100%;
 }
 
+.listRowPlain {
+  border-bottom: 1px solid rgba(127, 127, 127, 0.15);
+  background: transparent;
+  color: inherit;
+}
+
+.listRowPlain:last-child {
+  border-bottom: none;
+}
+
 .listRowText {
-  padding: 0 8px;
+  box-sizing: border-box;
+  padding: 4px 8px;
   width: 100%;
-  white-space: pre;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.45;
   font-family: var(--vscode-editor-font-family);
 }
 
@@ -23,26 +41,3 @@
   border: 1px solid var(--vscode-input-border, var(--rr-input-border));
   border-radius: 4px;
 }
-
-.listRow {
-  height: 34px;
-  display: flex;
-  align-items: center;
-  padding: 0 8px;
-  gap: 8px;
-  border-bottom: 1px solid rgba(127, 127, 127, 0.15);
-  cursor: pointer;
-  background: transparent;
-  color: inherit;
-  width: 100%;
-}
-
-.listRow:hover {
-  background: var(--vscode-list-hoverBackground);
-}
-
-.listRow span:last-child {
-  flex: 1;
-  min-width: 0;
-}
-

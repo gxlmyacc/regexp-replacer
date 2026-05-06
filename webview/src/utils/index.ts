@@ -1,4 +1,5 @@
 import type { ReplaceCommand, ReplaceRule } from '../../../src/types';
+import type { LanguageCode } from '../i18n';
 
 export type RegexTokenType =
   | 'text'
@@ -24,6 +25,41 @@ export type CommandLike = {
   postCommands?: string[];
   rules?: { preCommands?: string[]; postCommands?: string[]; find?: string; replace?: string }[];
 };
+
+export type SanitizeCommandsOptions = {
+  /**
+   * 界面语言：用于把 `title` / `description` / 规则标题等字段从双语对象解析为单语字符串。
+   * 缺省为 `en`。
+   */
+  locale?: LanguageCode;
+};
+
+/**
+ * 将配置中的「字符串或 { en, zh-CN }」解析为当前界面语言下的展示文本。
+ *
+ * @param value 原始值（string、双语对象或其它）。
+ * @param locale 目标语言代码。
+ * @returns 解析后的非空字符串；无法解析时返回空字符串。
+ */
+export function pickLocalizedString(value: unknown, locale: LanguageCode): string {
+  if (typeof value === 'string') return value.trim();
+  if (!value || typeof value !== 'object') return '';
+  const o = value as Record<string, unknown>;
+  const pick = (k: string): string => {
+    const s = o[k];
+    return typeof s === 'string' ? s.trim() : '';
+  };
+  const primary = locale === 'zh-CN' ? pick('zh-CN') : pick('en');
+  if (primary) return primary;
+  const en = pick('en');
+  if (en) return en;
+  const zh = pick('zh-CN');
+  if (zh) return zh;
+  for (const v of Object.values(o)) {
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  return '';
+}
 
 /**
  * 生成一个简易唯一 id（用于 UI 内部临时标识，如拖拽 uid、表格行 uid）。
@@ -71,9 +107,11 @@ export function createDefaultRule(): ReplaceRule {
  * 将来自配置/导入的命令列表做容错清洗，避免脏数据导致 UI 崩溃。
  *
  * @param payload 原始 payload（可能来自导入文件或 VS Code 配置）。
+ * @param options 可选配置（如界面语言，用于解析双语字段）。
  * @returns 清洗后的命令列表（保证每条命令都有 rules 数组，且至少 1 条规则）。
  */
-export function sanitizeCommandsPayload(payload: unknown): ReplaceCommand[] {
+export function sanitizeCommandsPayload(payload: unknown, options?: SanitizeCommandsOptions): ReplaceCommand[] {
+  const locale: LanguageCode = options?.locale ?? 'en';
   const list = Array.isArray(payload) ? payload : [];
   const out: ReplaceCommand[] = [];
   const usedIds = new Set<string>();
@@ -81,7 +119,7 @@ export function sanitizeCommandsPayload(payload: unknown): ReplaceCommand[] {
   for (const raw of list) {
     if (!raw || typeof raw !== 'object') continue;
     const r = raw as any;
-    const rawTitle = typeof r.title === 'string' ? r.title.trim() : '';
+    const rawTitle = pickLocalizedString(r.title, locale);
     if (!rawTitle) continue;
 
     // 导入文件可能没有 id：此时使用 title 生成一个稳定可读的 id（同时避免与现有 id 冲突）。
@@ -113,7 +151,9 @@ export function sanitizeCommandsPayload(payload: unknown): ReplaceCommand[] {
         const flags = typeof rr.flags === 'string' ? rr.flags : 'g';
         const testText = typeof rr.testText === 'string' ? rr.testText : undefined;
         const enable = typeof rr.enable === 'boolean' ? rr.enable : undefined;
-        const title2 = typeof rr.title === 'string' ? rr.title : undefined;
+        const ruleTitleSrc = rr.title !== undefined && rr.title !== null ? rr.title : rr.name;
+        const title2Pick = pickLocalizedString(ruleTitleSrc, locale);
+        const title2 = title2Pick || undefined;
         const preCommands = Array.isArray(rr.preCommands) ? rr.preCommands.filter((s: unknown) => typeof s === 'string') : undefined;
         const postCommands = Array.isArray(rr.postCommands) ? rr.postCommands.filter((s: unknown) => typeof s === 'string') : undefined;
         const wildcardOptions =
@@ -134,10 +174,11 @@ export function sanitizeCommandsPayload(payload: unknown): ReplaceCommand[] {
       })
       .filter((rr: ReplaceRule) => !!rr);
 
+    const descPick = pickLocalizedString(r.description, locale);
     out.push({
       id,
       title,
-      description: typeof r.description === 'string' ? r.description : undefined,
+      description: descPick || undefined,
       rules: rules.length > 0 ? rules : [createDefaultRule()],
       ...(Array.isArray(r.preCommands) ? ({ preCommands: r.preCommands.filter((s: unknown) => typeof s === 'string') } as any) : {}),
       ...(Array.isArray(r.postCommands) ? ({ postCommands: r.postCommands.filter((s: unknown) => typeof s === 'string') } as any) : {}),

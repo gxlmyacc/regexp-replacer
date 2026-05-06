@@ -48,6 +48,7 @@ import {
   tokenizeRegexPattern,
 } from './utils';
 import { copyTextToClipboard } from './utils/clipboard';
+import { fetchAndSanitizeDevSeedCommands, mergeDevSeedDisplayFields } from './utils/devSeedRelocale';
 import { Toast } from './components/base';
 import type { ToolsTab } from './hooks/useRuleUiCache';
 import { useRuleUiCache } from './hooks/useRuleUiCache';
@@ -72,6 +73,9 @@ import './App.scss';
 export function App(): React.ReactElement {
   const vscodeApi = useMemo(() => createVscodeApi(), []);
   const { lang, setLang, t } = useI18n();
+  /** 供 config 回包解析双语种子数据时读取当前界面语言。 */
+  const uiLocaleRef = useRef(lang);
+  uiLocaleRef.current = lang;
   const tRef = useRef(t);
   const isMountedRef = useRef(true);
 
@@ -129,6 +133,8 @@ export function App(): React.ReactElement {
   const [replacePreview, setReplacePreview] = useState<
     { count: number; text: string; parts: { text: string; replaced: boolean }[]; finalText: string } | undefined
   >(undefined);
+  /** 替换页是否高亮「被替换」片段；默认关闭以减少预览分段分配。 */
+  const [replacePreviewHighlight, setReplacePreviewHighlight] = useState(false);
   const [dirty, setDirty] = useState(false);
   const dirtyRef = useRef(false);
 
@@ -292,6 +298,7 @@ export function App(): React.ReactElement {
     initialUntitledEnsuredRef,
     draftIdRef,
     createDraftCommand,
+    uiLocaleRef,
   });
 
   /**
@@ -336,6 +343,35 @@ export function App(): React.ReactElement {
 
   useEffect(() => {
     setCommands((prev) => normalizeCommandTitlesForLanguage(prev));
+  }, [lang]);
+
+  const prevUiLangForSeedRef = useRef<LanguageCode | null>(null);
+
+  /**
+   * 界面语言切换后：重新拉取开发种子 JSON，并把 `dev_sample_*` 演示命令的标题/描述/规则标题
+   * 合并进当前列表（不改动规则表达式）；有未保存改动时跳过，避免覆盖用户编辑。
+   */
+  useEffect(() => {
+    if (prevUiLangForSeedRef.current === null) {
+      prevUiLangForSeedRef.current = lang;
+      return;
+    }
+    if (prevUiLangForSeedRef.current === lang) return;
+    prevUiLangForSeedRef.current = lang;
+    let cancelled = false;
+    void (async () => {
+      const seed = await fetchAndSanitizeDevSeedCommands(lang);
+      if (cancelled || !isMountedRef.current || !seed.length) return;
+      setCommands((prev) => {
+        if (dirtyRef.current) return prev;
+        const merged = mergeDevSeedDisplayFields(prev, seed);
+        savedSnapshotRef.current = structuredClone(merged) as ReplaceCommand[];
+        return merged;
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [lang]);
 
   useEffect(() => {
@@ -734,7 +770,10 @@ export function App(): React.ReactElement {
         }
       }
 
-      const res = computeReplacePreview(rule, beforeCurrent, uiCache.replaceInput, { maxPreviewChars: 200_000 });
+      const res = computeReplacePreview(rule, beforeCurrent, uiCache.replaceInput, {
+        maxPreviewChars: 200_000,
+        collectHighlightParts: replacePreviewHighlight,
+      });
       const afterCurrent = res.fullText;
       const finalText = applyPostHooks && postIds.length ? safeRunHookChain(afterCurrent, postIds) : afterCurrent;
 
@@ -759,6 +798,7 @@ export function App(): React.ReactElement {
     applyPreHooks,
     applyPostHooks,
     applyPrevRules,
+    replacePreviewHighlight,
   ]);
 
   /**
@@ -1581,11 +1621,27 @@ export function App(): React.ReactElement {
                 onChange={(key) => setToolsTab(key as ToolsTab)}
                 extra={
                   toolsTab === 'replace' || toolsTab === 'list' ? (
-                    <Tooltip content={t.copy}>
-                      <Button preset="topIcon" aria-label={t.copy} onClick={() => void copyActiveToolsResult(toolsTab)}>
-                        <Icon type="copy" />
-                      </Button>
-                    </Tooltip>
+                    <Layout.Row align="center" gap={8}>
+                      {toolsTab === 'replace' ? (
+                        <Tooltip content={t.replaceResultHighlightTip}>
+                          <Button
+                            preset="chip"
+                            className="rrRuleEnableChip"
+                            active={replacePreviewHighlight}
+                            aria-pressed={replacePreviewHighlight}
+                            aria-label={t.replacePreviewHighlightChip}
+                            onClick={() => setReplacePreviewHighlight((h) => !h)}
+                          >
+                            {t.replacePreviewHighlightChip}
+                          </Button>
+                        </Tooltip>
+                      ) : null}
+                      <Tooltip content={t.copy}>
+                        <Button preset="topIcon" aria-label={t.copy} onClick={() => void copyActiveToolsResult(toolsTab)}>
+                          <Icon type="copy" />
+                        </Button>
+                      </Tooltip>
+                    </Layout.Row>
                   ) : null
                 }
               />
@@ -1594,7 +1650,7 @@ export function App(): React.ReactElement {
                   <div className="toolsReplaceLayout">
                     <ReplaceResultBox
                       className={toolsPreviewFillClassName}
-                      highlightReplaced={!applyPostHooks}
+                      highlightReplaced={replacePreviewHighlight && !applyPostHooks}
                       parts={replacePreview?.parts ?? []}
                       fallbackText={replacePreview?.text ?? ''}
                       emptyText={t.emptyText}

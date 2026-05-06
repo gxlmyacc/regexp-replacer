@@ -125,7 +125,7 @@
   color: var(--vscode-input-foreground, var(--rr-input-foreground));
   font-family: var(--vscode-editor-font-family, Consolas, monospace);
   /* 对齐 Input(line) 的字号，避免 placeholder 视觉不一致 */
-  font-size: var(--vscode-font-size, 13px);
+  font-size: var(--rr-ui-font-size);
 }
 
 .rrMappingTableExprHost .cm-editor.cm-focused {

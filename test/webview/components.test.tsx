@@ -178,7 +178,7 @@ describe('webview components (minimal)', () => {
       />,
     );
     try {
-      expect(host.textContent).toBe('ab');
+      expect(host.querySelector('.replaceResultBox__lineMain')?.textContent).toBe('ab');
       expect(host.querySelector('.replacePreviewHit')).toBeNull();
     } finally {
       unmount(host);
