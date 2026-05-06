@@ -34,5 +34,8 @@ eslint.config.js
 cspell.json
 tsconfig*.json
 
+# README screenshots (README uses raw.githubusercontent.com URLs; omit from .vsix to shrink package)
+images/**
+
 # Docs
 README.zh-CN.md

@@ -4,9 +4,23 @@ Reusable **regex / text / wildcard** replacement commands for VS Code.
 
 ## UI preview
 
+### RegExp UI (webview)
+
 The **RegExp UI** webview: command list on the left, rule editor (expression, flags, hooks), test editor, and replace preview / list / details / explain tools.
 
 ![RegExp UI](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/ui.png)
+
+### Command Palette
+
+Extension commands when searching the palette (for example, `RegExp`).
+
+![Command palette entries](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/commands.png)
+
+### Editor title icon (optional)
+
+When **Show icon** is on and **Icon placement** is **editor**, the title bar opens a submenu for Replace in File, Replace in Selection, and RegExp UI.
+
+![Editor title bar icon menu](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/icon-menu.png)
 
 ## Features
 

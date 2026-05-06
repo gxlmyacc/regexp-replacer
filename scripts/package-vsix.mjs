@@ -58,7 +58,10 @@ export function main() {
     return path.join(releaseDir, `${name}-${version}.vsix`);
   }
 
-  run('node', [VSCE_CLI, 'package', '--yarn', '--out', getVsixOutPath()]);
+  // 不使用 --yarn：Yarn 1 执行 `yarn list --prod` 时会解析 @vscode/vsce 的可选平台包
+  //（@vscode/vsce-sign-*），在部分镜像/网络下会报 “Couldn't find package on npm registry”。
+  // 根目录 package.json 已配置 `vsce.yarn: false`，此处由 npm 枚举生产依赖。
+  run('node', [VSCE_CLI, 'package', '--out', getVsixOutPath()]);
 }
 
 main();

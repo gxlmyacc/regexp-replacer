@@ -4,9 +4,23 @@
 
 ## 界面预览
 
+### RegExp UI（Webview）
+
 **RegExp UI** Webview：左侧为命令列表，右侧为规则编辑器（表达式、flags、前置/后置 hook）、测试编辑器，以及底部工具区的替换预览、列表、详情、解释等。
 
 ![RegExp UI](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/ui.png)
+
+### 命令面板
+
+在命令面板中搜索扩展相关命令（例如输入 `RegExp`）时的列表。
+
+![命令面板中的扩展命令](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/commands.png)
+
+### 编辑器标题栏图标（可选）
+
+开启 **显示图标** 且 **图标位置** 为 **编辑器** 时，标题栏图标可展开子菜单：在文件中替换、在选中文本中替换、RegExp UI。
+
+![编辑器标题栏图标与子菜单](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/icon-menu.png)
 
 ## 功能
 

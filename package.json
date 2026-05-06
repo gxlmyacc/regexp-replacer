@@ -3,13 +3,16 @@
   "private": true,
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "packageManager": "yarn@1.22.22",
   "publisher": "gxlmyacc",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/gxlmyacc/regexp-replacer"
+  },
+  "vsce": {
+    "yarn": false
   },
   "engines": {
     "vscode": "^1.90.0"
@@ -78,7 +81,7 @@
         {
           "submenu": "regexpReplacer.editorTitleMenu",
           "group": "navigation@100",
-          "when": "editorTextFocus && config.regexpReplacer.ui.showIcon && config.regexpReplacer.ui.iconPlacement == 'editor'"
+          "when": "editorIsOpen && config.regexpReplacer.ui.showIcon && config.regexpReplacer.ui.iconPlacement == 'editor'"
         }
       ],
       "regexpReplacer.editorTitleMenu": [
