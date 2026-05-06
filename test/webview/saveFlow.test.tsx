@@ -48,6 +48,45 @@ describe('saveFlow', () => {
     expect(toast.show).toHaveBeenCalled();
   });
 
+  test('validateMapRulesBeforeSave：匹配列为空或仅空格会阻止保存并 toast', () => {
+    const toast = { show: vi.fn() };
+    const baseT = {
+      nameRequired: '',
+      nameDuplicate: '',
+      nameReservedChars: '',
+      ruleTitleReservedChars: '',
+      ruleLabel: '规则',
+      addRuleFirst: '',
+      confirm: '',
+      cancel: '',
+      mapMatchRequired: 'MATCH_REQUIRED_I18N',
+    };
+    for (const find of ['', '   ', '\t']) {
+      toast.show.mockClear();
+      const ok = validateMapRulesBeforeSave(
+        [
+          {
+            id: 'c1',
+            title: 'C',
+            rules: [
+              {
+                engine: 'regex',
+                find: 'x',
+                replace: 'y',
+                flags: 'g',
+                replaceMode: 'map',
+                map: { mode: 'text', cases: [{ find, replace: 'b' }] },
+              } as any,
+            ],
+          } as any,
+        ],
+        { lang: 'zh-CN' as any, t: baseT as any, toast },
+      );
+      expect(ok).toBe(false);
+      expect(toast.show).toHaveBeenCalledWith('MATCH_REQUIRED_I18N', 'error');
+    }
+  });
+
   test('validateRuleExpressionsBeforeSave：非法正则会阻止保存并 toast', () => {
     const toast = { show: vi.fn() };
     const ok = validateRuleExpressionsBeforeSave(

@@ -32,6 +32,7 @@ export const zhCN = {
   mappingTableHelpReplace: '替换模板支持 \\n、\\t、\\\\ 等转义，以及 $&、$1..$99、$$、$<name> 等占位符（与主替换模板一致）。',
   mapOnlyRegex: '映射模式仅支持 regex 引擎。',
   mapEmpty: '映射表不能为空，请至少添加 1 条规则。',
+  mapMatchRequired: '映射表每一行的「匹配」不能为空。',
   mapItemRegexInvalid: '映射表中的正则表达式不合法。',
   copy: '复制',
   copied: '已复制。',

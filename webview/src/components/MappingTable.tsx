@@ -29,6 +29,8 @@ export type MappingTableStrings = {
   addRow: string;
   deleteRow: string;
   duplicateKey: string;
+  /** 匹配列为空时的失焦提示（与保存校验文案一致）。 */
+  matchRequired?: string;
   matchHelp?: string;
 };
 
@@ -61,6 +63,8 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
   const { map, onChangeMap, uiLanguage, t } = props;
   const [rows, setRows] = useState<MappingRow[]>([{ uid: createId(), find: '', replace: '' }]);
   const [errorFinds, setErrorFinds] = useState<Set<string>>(() => new Set());
+  /** 仅在「匹配」失焦校验发现为空后记录 uid，避免未编辑的默认空白行一上来就标红。 */
+  const [emptyMatchWarnUids, setEmptyMatchWarnUids] = useState<Set<string>>(() => new Set());
   const skipNextSyncFromEffectRef = useRef<boolean>(false);
   const rowsRef = useRef<MappingRow[]>(rows);
   const [hoverUid, setHoverUid] = useState<string | null>(null);
@@ -89,6 +93,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
     const cases = (map?.cases ?? []).map((x) => ({ uid: createId(), find: String(x.find ?? ''), replace: String(x.replace ?? '') }));
     setRows(cases.length > 0 ? cases : [{ uid: createId(), find: '', replace: '' }]);
     setErrorFinds(new Set());
+    setEmptyMatchWarnUids(new Set());
   }, [mapKey]);
 
   useEffect(() => {
@@ -151,6 +156,21 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
       Toast.show(t.duplicateKey, 'error');
       return false;
     }
+    const hasEmpty = list.some((r) => !String(r.find ?? '').trim());
+    if (hasEmpty) {
+      setEmptyMatchWarnUids((prev) => {
+        const next = new Set(prev);
+        for (const r of list) {
+          if (!String(r.find ?? '').trim()) next.add(r.uid);
+        }
+        return next;
+      });
+      const msg =
+        t.matchRequired ??
+        (uiLanguage === 'zh-CN' ? '映射表每一行的「匹配」不能为空。' : 'Each mapping row must have a non-empty Match value.');
+      Toast.show(msg, 'error');
+      return false;
+    }
     return true;
   }
 
@@ -169,6 +189,15 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
       seen.add(r.find);
     }
     setErrorFinds(dup);
+    setEmptyMatchWarnUids((prev) => {
+      if (prev.size === 0) return prev;
+      const next = new Set<string>();
+      for (const uid of prev) {
+        const row = list.find((x) => x.uid === uid);
+        if (row && !String(row.find ?? '').trim()) next.add(uid);
+      }
+      return next.size === prev.size && [...prev].every((u) => next.has(u)) ? prev : next;
+    });
   }
 
   /**
@@ -228,7 +257,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
       skipNextSyncFromEffectRef.current = true;
       commitToMap(ensured, mode);
       // 删除后也重新做一次校验，清掉可能的错误态
-      validateUniqueMatch(ensured);
+      validateUniqueMatchSilent(ensured);
       return ensured;
     });
   }
@@ -320,7 +349,10 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
 
       <div className="rrMappingTableBody">
         {rows.map((r, idx) => {
-          const hasErr = r.find ? errorFinds.has(r.find) : false;
+          const hasDup = r.find ? errorFinds.has(r.find) : false;
+          const emptyFind = !String(r.find ?? '').trim();
+          const showEmptyErr = emptyFind && emptyMatchWarnUids.has(r.uid);
+          const hasErr = hasDup || showEmptyErr;
           return (
             <div
               key={r.uid}
@@ -352,6 +384,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
                         onAfterChange={() => {
                           validateUniqueMatchSilent(rowsRef.current);
                         }}
+                        onBlur={() => validateUniqueMatch(rowsRef.current)}
                       />
                     </div>
                   ) : (
@@ -359,7 +392,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
                       variant="line"
                       value={r.find}
                       onChange={(e) => updateRow(idx, { find: e.target.value })}
-                      onBlur={() => validateUniqueMatch(rows)}
+                      onBlur={() => validateUniqueMatch(rowsRef.current)}
                       placeholder={colLeft}
                       status={hasErr ? 'error' : undefined}
                     />

@@ -69,19 +69,20 @@
       "editor/context": [
         {
           "command": "regexpReplacer.replaceInFile",
-          "group": "regexpReplacer@1"
+          "group": "regexpReplacer@1",
+          "when": "resourceScheme =~ /^(file|untitled|vscode-notebook-cell|vscode-interactive-input)$/"
         },
         {
           "command": "regexpReplacer.replaceInSelection",
           "group": "regexpReplacer@2",
-          "when": "editorHasSelection"
+          "when": "editorHasSelection && resourceScheme =~ /^(file|untitled|vscode-notebook-cell|vscode-interactive-input)$/"
         }
       ],
       "editor/title": [
         {
           "submenu": "regexpReplacer.editorTitleMenu",
           "group": "navigation@100",
-          "when": "editorIsOpen && config.regexpReplacer.ui.showIcon && config.regexpReplacer.ui.iconPlacement == 'editor'"
+          "when": "editorIsOpen && config.regexpReplacer.ui.showIcon && config.regexpReplacer.ui.iconPlacement == 'editor' && resourceScheme =~ /^(file|untitled|vscode-notebook-cell|vscode-interactive-input)$/"
         }
       ],
       "regexpReplacer.editorTitleMenu": [

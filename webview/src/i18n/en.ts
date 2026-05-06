@@ -34,6 +34,7 @@ export const en = {
     'The replacement template supports VS Code-like escapes (\\n, \\t, \\\\) and JS tokens ($&, $1..$99, $$, $<name>).',
   mapOnlyRegex: 'Map mode only supports regex engine.',
   mapEmpty: 'Mapping table cannot be empty. Please add at least one rule.',
+  mapMatchRequired: 'Each mapping row must have a non-empty Match value.',
   mapItemRegexInvalid: 'Invalid regex in mapping table.',
   copy: 'Copy',
   copied: 'Copied.',

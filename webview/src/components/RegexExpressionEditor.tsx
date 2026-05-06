@@ -15,16 +15,18 @@ export type RegexExpressionEditorProps = {
   onChange: (value: string) => void;
   /** 输入后触发一次重算（上游可做 debounce，此处按需每次触发）。 */
   onAfterChange: () => void;
+  /** 编辑器失焦时触发（可选；用于映射表等场景的校验提示）。 */
+  onBlur?: () => void;
 };
 
 /**
  * 正则表达式编辑器（CodeMirror 版）：在输入框内对正则 token 进行高亮显示。
  *
- * @param props 组件属性。
+ * @param props 组件属性；其中 `onBlur` 可选，在编辑器失焦时触发（例如映射表行内校验）。
  * @returns React 元素。
  */
 export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: RegexExpressionEditorProps): React.ReactElement {
-  const { value, placeholder: ph, uiLanguage, onChange, onAfterChange } = props;
+  const { value, placeholder: ph, uiLanguage, onChange, onAfterChange, onBlur } = props;
   const hostRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const lastValueRef = useRef<string>(value ?? '');
@@ -94,6 +96,15 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       onChange(next);
       onAfterChange();
     });
+
+    const blurHandlers = onBlur
+      ? EditorView.domEventHandlers({
+          blur: () => {
+            onBlur();
+            return false;
+          },
+        })
+      : [];
 
     // 正则 token 高亮：用 Decoration.mark 给不同 token 区段加 class。
     const tokenHighlight = ViewPlugin.fromClass(
@@ -401,8 +412,9 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       tokenHighlight,
       createDiagnosticsHoverTooltip(),
       updateListener,
+      blurHandlers,
     ];
-  }, [onAfterChange, onChange, ph, uiLanguage]);
+  }, [onAfterChange, onBlur, onChange, ph, uiLanguage]);
 
   useEffect(() => {
     if (!hostRef.current) return;

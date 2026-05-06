@@ -28,6 +28,7 @@ export type SaveFlowMessages = {
   addRuleFirstInfo?: string;
   mapOnlyRegex?: string;
   mapEmpty?: string;
+  mapMatchRequired?: string;
   mapItemRegexInvalid?: string;
 };
 
@@ -76,7 +77,7 @@ export function buildSavePayload(list: ReplaceCommand[]): ReplaceCommand[] {
  * @returns 是否通过校验。
  */
 export function validateMapRulesBeforeSave(payload: ReplaceCommand[], deps: SaveFlowDeps): boolean {
-  const { t, toast } = deps;
+  const { t, toast, lang } = deps;
   for (const cmd of payload) {
     for (const rule of cmd.rules) {
       const mode = (rule as any)?.replaceMode ?? 'template';
@@ -91,11 +92,19 @@ export function validateMapRulesBeforeSave(payload: ReplaceCommand[], deps: Save
         toast.show(t.mapEmpty ?? '映射表不能为空，请至少添加 1 条规则。', 'error');
         return false;
       }
+      for (const it of cases) {
+        if (String(it?.find ?? '').trim() === '') {
+          toast.show(
+            t.mapMatchRequired ?? (lang === 'zh-CN' ? '映射表每一行的「匹配」不能为空。' : 'Each mapping row must have a non-empty Match value.'),
+            'error',
+          );
+          return false;
+        }
+      }
       if (m?.mode === 'regex') {
         try {
           for (const it of cases) {
-            const src = String(it?.find ?? '');
-            if (!src) continue;
+            const src = String(it?.find ?? '').trim();
             RegExp(src, 'g');
           }
         } catch (e) {

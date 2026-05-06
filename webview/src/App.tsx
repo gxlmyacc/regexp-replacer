@@ -860,6 +860,7 @@ export function App(): React.ReactElement {
       cancel: t.cancel,
       mapOnlyRegex: (t as any).mapOnlyRegex,
       mapEmpty: (t as any).mapEmpty,
+      mapMatchRequired: (t as any).mapMatchRequired,
       mapItemRegexInvalid: (t as any).mapItemRegexInvalid,
     },
     toast: Toast,
@@ -1573,6 +1574,7 @@ export function App(): React.ReactElement {
                     addRow: (t as any).mappingAddRow,
                     deleteRow: (t as any).mappingDeleteRow,
                     duplicateKey: (t as any).mappingDuplicateKey,
+                    matchRequired: (t as any).mapMatchRequired,
                     matchHelp: `${(t as any).mappingTableHelpIntro}\n\n${(t as any).mappingTableHelpMatch}\n\n${(t as any).mappingTableHelpReplace}`,
                   }}
                   onChangeMap={(nextMap) => {

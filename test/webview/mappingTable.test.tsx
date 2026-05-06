@@ -56,6 +56,9 @@ describe('MappingTable', () => {
       const inputs = Array.from(host.querySelectorAll('input.rrInput__control')) as HTMLInputElement[];
       expect(inputs.length).toBe(2); // 默认 1 行：匹配 + 替换
 
+      // 未编辑的默认空白行不应标红（空匹配样式仅在失焦校验后才出现）
+      expect(host.querySelectorAll('.rrInput--status-error').length).toBe(0);
+
       // 输入匹配/替换
       TestUtils.act(() => {
         TestUtils.Simulate.change(inputs[0], { target: { value: 'a' } });
