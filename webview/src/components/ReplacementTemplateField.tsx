@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Input } from './base';
 import type { InputVariant } from './base';
 import './ReplacementTemplateField.scss';
@@ -21,6 +21,11 @@ export type ReplacementTemplateFieldProps = {
    */
   captureGroupLevels?: number[];
   /**
+   * 当前「查找」正则中捕获组个数；用于 `$n` 分词（避免 `$1` 后紧跟数字被误识别为 `$13`）。
+   * 未传时按最多 99 组解析（兼容旧行为）；为 0 时 `$` 后数字不作为分组引用高亮。
+   */
+  maxCaptureGroupCount?: number;
+  /**
    * 输入框样式变体：默认为 mono（与规则编辑器一致）。
    */
   variant?: InputVariant;
@@ -29,12 +34,15 @@ export type ReplacementTemplateFieldProps = {
 
 /**
  * 将替换模板拆分为可高亮的片段（普通文本、转义序列、分组引用、其他替换占位符）。
+ * `$` 后 1～2 位数字仅在解析出的组号 `n` 满足 `1 <= n <= maxCaptureGroupCount`（且 `n <= 99`）时视为分组引用；优先尝试两位数再退回一位，与「按当前正则组数」一致。
  *
  * @param template 替换模板文本。
+ * @param maxCaptureGroupCount 当前查找正则中的捕获组个数；`undefined` 时视为 99（旧版贪心两位数字）。
  * @returns 分词后的片段列表。
  */
-function tokenizeReplacementTemplate(template: string): ReplacementTemplateToken[] {
+function tokenizeReplacementTemplate(template: string, maxCaptureGroupCount?: number): ReplacementTemplateToken[] {
   const out: ReplacementTemplateToken[] = [];
+  const maxN = maxCaptureGroupCount === undefined ? 99 : Math.min(99, Math.max(0, maxCaptureGroupCount));
 
   /**
    * 追加一个分词片段；若类型相同则与前一片段合并。
@@ -75,16 +83,22 @@ function tokenizeReplacementTemplate(template: string): ReplacementTemplateToken
         i += 1;
         continue;
       }
-      if (next && /\d/.test(next)) {
+      if (next && /\d/.test(next) && maxN >= 1) {
         const next2 = template[i + 2];
         if (next2 && /\d/.test(next2)) {
-          push('replacement-index', `$${next}${next2}`);
-          i += 2;
+          const twoVal = Number.parseInt(`${next}${next2}`, 10);
+          if (twoVal >= 1 && twoVal <= maxN) {
+            push('replacement-index', `$${next}${next2}`);
+            i += 2;
+            continue;
+          }
+        }
+        const oneVal = Number.parseInt(next, 10);
+        if (oneVal >= 1 && oneVal <= maxN) {
+          push('replacement-index', `$${next}`);
+          i += 1;
           continue;
         }
-        push('replacement-index', `$${next}`);
-        i += 1;
-        continue;
       }
       if (next === '<') {
         const end = template.indexOf('>', i + 2);
@@ -135,8 +149,9 @@ function levelFromGroupIndex(groupIndex: number): number {
 export const ReplacementTemplateField = memo(function ReplacementTemplateField(
   props: ReplacementTemplateFieldProps,
 ): React.ReactElement {
-  const { value, disabled, placeholder, highlightEnabled = false, captureGroupLevels, variant = 'mono', onChange } = props;
-  const tokens = tokenizeReplacementTemplate(value);
+  const { value, disabled, placeholder, highlightEnabled = false, captureGroupLevels, maxCaptureGroupCount, variant = 'mono', onChange } =
+    props;
+  const tokens = useMemo(() => tokenizeReplacementTemplate(value, maxCaptureGroupCount), [value, maxCaptureGroupCount]);
   const overlay = highlightEnabled ? (
     <>
       {value ? (

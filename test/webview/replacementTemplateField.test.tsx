@@ -68,6 +68,31 @@ describe('ReplacementTemplateField', () => {
     }
   });
 
+  test('maxCaptureGroupCount：仅按当前正则组数识别 $n（$1 后数字不并入 $13）', () => {
+    const onChange = vi.fn<(v: string) => void>();
+    const host = mount(
+      <ReplacementTemplateField
+        value="$13333333"
+        highlightEnabled={true}
+        maxCaptureGroupCount={1}
+        placeholder="ph"
+        onChange={onChange}
+        variant="line"
+      />,
+    );
+    try {
+      const idxSpans = host.querySelectorAll('.replacement-template-field__tok--replacement-index');
+      expect(idxSpans.length).toBe(1);
+      expect((idxSpans[0] as HTMLElement).textContent).toBe('$1');
+      const plain = Array.from(host.querySelectorAll('.replacement-template-field__tok--plain')).map(
+        (el) => (el as HTMLElement).textContent ?? '',
+      );
+      expect(plain.join('')).toContain('3333333');
+    } finally {
+      unmount(host);
+    }
+  });
+
   test('highlightDisabled：不渲染 overlay（保持普通输入）', () => {
     const onChange = vi.fn<(v: string) => void>();
     const host = mount(<ReplacementTemplateField value={'$1'} highlightEnabled={false} onChange={onChange} />);

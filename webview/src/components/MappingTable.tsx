@@ -5,6 +5,7 @@ import type { LanguageCode } from '../i18n';
 import { RegexExpressionEditor } from './RegexExpressionEditor';
 import { ReplacementTemplateField } from './ReplacementTemplateField';
 import { createId } from '../utils';
+import { collectCapturingGroupOpenOffsets } from '../utils/regexCaptureGroupScan';
 import { Toast } from './base';
 import './MappingTable.scss';
 
@@ -405,6 +406,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
                       onChange={(nextValue) => updateRow(idx, { replace: nextValue })}
                       placeholder={colRight}
                       highlightEnabled={true}
+                      maxCaptureGroupCount={collectCapturingGroupOpenOffsets(r.find).length}
                       variant="line"
                     />
                   ) : (

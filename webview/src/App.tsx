@@ -48,6 +48,7 @@ import {
   tokenizeRegexPattern,
 } from './utils';
 import { copyTextToClipboard } from './utils/clipboard';
+import { collectCapturingGroupOpenOffsets } from './utils/regexCaptureGroupScan';
 import { fetchAndSanitizeDevSeedCommands, mergeDevSeedDisplayFields } from './utils/devSeedRelocale';
 import { Toast } from './components/base';
 import type { ToolsTab } from './hooks/useRuleUiCache';
@@ -623,6 +624,11 @@ export function App(): React.ReactElement {
   const replaceMode = (selectedRule?.replaceMode ?? 'template') as 'template' | 'map';
   const selectedRuleEngine = selectedRule?.engine;
   const canReplaceMap = selectedRuleEngine === 'regex';
+  /** 主规则「查找」正则的捕获组个数，供替换模板 `$n` 高亮分词（避免 `$1` 后数字被并入 `$13`）。 */
+  const replacementTemplateMaxCaptureGroups = useMemo(() => {
+    if (selectedRule?.engine !== 'regex') return 0;
+    return collectCapturingGroupOpenOffsets(String(selectedRule.find ?? '')).length;
+  }, [selectedRule?.engine, selectedRule?.find]);
   const effectiveReplaceMode = canReplaceMap ? replaceMode : 'template';
   const currentMatchIndex = uiCache.currentMatchIndex;
   const testText = uiCache.testText;
@@ -1511,6 +1517,7 @@ export function App(): React.ReactElement {
               value={replaceInput}
                   disabled={effectiveReplaceMode === 'map'}
               highlightEnabled={selectedRule?.engine === 'regex'}
+              maxCaptureGroupCount={replacementTemplateMaxCaptureGroups}
               onChange={(v) => {
                 setReplaceInput(v);
                 // 替换模板属于规则配置：同步写回当前规则，确保保存时能落盘到 settings.json
