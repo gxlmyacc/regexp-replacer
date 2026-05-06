@@ -175,13 +175,12 @@ export function sanitizeCommandsPayload(payload: unknown, options?: SanitizeComm
       .filter((rr: ReplaceRule) => !!rr);
 
     const descPick = pickLocalizedString(r.description, locale);
+    // 命令级 preCommands/postCommands 已废弃，扩展端不执行；此处不再落盘，避免与 README/类型定义不一致。
     out.push({
       id,
       title,
       description: descPick || undefined,
       rules: rules.length > 0 ? rules : [createDefaultRule()],
-      ...(Array.isArray(r.preCommands) ? ({ preCommands: r.preCommands.filter((s: unknown) => typeof s === 'string') } as any) : {}),
-      ...(Array.isArray(r.postCommands) ? ({ postCommands: r.postCommands.filter((s: unknown) => typeof s === 'string') } as any) : {}),
     } as any);
   }
   return out;

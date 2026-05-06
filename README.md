@@ -27,7 +27,7 @@ When **Show icon** is on and **Icon placement** is **editor**, the title bar ope
 - **Replace in File**: run a configured replacement command on the active editor document.
 - **Replace in Selection**: run a configured replacement command on the current selection(s).
 - **RegExp UI**: open a webview to manage/create/edit commands and test rules.
-- **Command hooks**: run VS Code command ids before/after a replacement command.
+- **Command hooks**: run VS Code command ids (or chained configured commands) before/after **each rule** in a replacement command.
 - **Import / Export (RegExp UI)**: import/export commands as JSON files.
 - **Resizable layout (RegExp UI)**: drag splitters to resize the left command list and the bottom tools dock.
 - **Optional icon / menu**: show a quick entry (editor title bar or status bar left/right); click for the same actions (Replace in File, Replace in Selection, RegExp UI). Editor placement uses a submenu; status bar uses QuickPick.
@@ -73,13 +73,13 @@ Below is an example you can paste into VS Code `settings.json`.
       "id": "demo-text",
       "title": "Demo: Text replace",
       "description": "Replace a literal substring",
-      "preCommands": ["editor.action.formatDocument"],
-      "postCommands": [],
       "rules": [
         {
           "engine": "text",
           "find": "foo",
-          "replace": "bar"
+          "replace": "bar",
+          "preCommands": ["editor.action.formatDocument"],
+          "postCommands": []
         }
       ]
     },
@@ -128,9 +128,7 @@ Notes:
 - **Rule enable**:
   - If a command has **all rules disabled**, it is hidden from the IDE command picker (QuickPick).
   - Hook chains triggered via `preCommands` / `postCommands` are **not filtered by `enable`**.
-- **Hooks (`preCommands` / `postCommands`)**:
-  - At **command level**: list of VS Code command ids or other configured command ids (for chaining).
-  - At **rule level** (optional): supported by RegExp UI for per-rule setup. The extension will execute rule hooks **before/after each rule** (and falls back to command-level hooks when rule hooks are not set).
+- **Hooks (`preCommands` / `postCommands`)** (rule level only): each entry is a VS Code command id or another configured command `id` (for chaining). The extension runs them **before/after that rule** in Replace in File / Replace in Selection. RegExp UI edits these per rule. Command-level hooks are **not supported** (legacy fields in `settings.json` are ignored).
   - If a **loop is detected** in the command chain during execution, the extension will **abort** and show an error to prevent hanging.
 
 ## RegExp UI notes

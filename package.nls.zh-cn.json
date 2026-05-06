@@ -17,8 +17,6 @@
   "configuration.commands.item.id": "命令 id（唯一）。",
   "configuration.commands.item.title": "命令标题。",
   "configuration.commands.item.description": "命令描述。",
-  "configuration.commands.item.preCommands": "执行替换前要运行的 VS Code 命令 id 列表。",
-  "configuration.commands.item.postCommands": "执行替换后要运行的 VS Code 命令 id 列表。",
   "configuration.commands.item.rules": "替换规则列表，按顺序依次执行。",
   "configuration.commands.item.rules.title": "规则标题（可选），用于描述规则用途。",
   "configuration.commands.item.rules.enable": "是否启用该规则。禁用后在执行替换时会跳过该规则。",

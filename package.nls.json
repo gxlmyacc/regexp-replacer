@@ -17,8 +17,6 @@
   "configuration.commands.item.id": "Command id (unique).",
   "configuration.commands.item.title": "Command title.",
   "configuration.commands.item.description": "Command description.",
-  "configuration.commands.item.preCommands": "VS Code command ids to run before replacement.",
-  "configuration.commands.item.postCommands": "VS Code command ids to run after replacement.",
   "configuration.commands.item.rules": "Replacement rules. Executed in order.",
   "configuration.commands.item.rules.title": "Rule title (optional).",
   "configuration.commands.item.rules.enable": "Whether the rule is enabled. Disabled rules are skipped during replacement.",

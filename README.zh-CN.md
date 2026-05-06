@@ -27,7 +27,7 @@
 - **在文件中替换**：对当前活动编辑器文档执行已配置的替换命令。
 - **在选中文本中替换**：对当前选区（支持多选区）执行已配置的替换命令。
 - **RegExp UI**：打开 Webview 页面管理/创建/编辑命令并测试规则。
-- **命令前置/后置**：在替换命令前后执行 VS Code 命令 id。
+- **命令前置/后置**：在**每条规则**执行前后运行 VS Code 命令 id（或其它已配置命令 id，用于链式执行）。
 - **导入 / 导出（RegExp UI）**：以 JSON 文件导入/导出命令配置。
 - **可拖拽布局（RegExp UI）**：拖拽分割线调整左侧命令列表宽度与底部工具区高度。
 - **可选快捷图标/菜单**：可将入口放在编辑器标题栏或底部状态栏左/右侧；点击后选择「在文件中替换」「在选中文本中替换」「RegExp UI」（标题栏为子菜单，状态栏为 QuickPick）。
@@ -73,13 +73,13 @@
       "id": "demo-text",
       "title": "Demo: 文本替换",
       "description": "替换字面量子串",
-      "preCommands": ["editor.action.formatDocument"],
-      "postCommands": [],
       "rules": [
         {
           "engine": "text",
           "find": "foo",
-          "replace": "bar"
+          "replace": "bar",
+          "preCommands": ["editor.action.formatDocument"],
+          "postCommands": []
         }
       ]
     },
@@ -129,9 +129,7 @@
 - **规则启用开关**：
   - 若某命令下**所有规则都禁用**，该命令将不会出现在 IDE 的命令选择（QuickPick）中。
   - 通过 `preCommands` / `postCommands` 触发的命令链执行，**不会按 `enable` 过滤**。
-- **前置/后置命令（`preCommands` / `postCommands`）**：
-  - **命令级**：可填写 VS Code command id，或填写其它已配置命令的 `id`（用于链式执行）。
-  - **规则级（可选）**：RegExp UI 支持按规则配置；扩展会在**每条规则执行前/后**执行对应 hook（若规则未配置则回退到命令级）。
+- **前置/后置命令（`preCommands` / `postCommands`）**（仅**规则级**）：每条可填 VS Code command id，或其它已配置命令的 `id`（链式执行）。扩展在**该条规则**执行前/后运行；RegExp UI 按规则编辑。**不支持**命令级 hooks（`settings.json` 里写在命令根上的旧字段会被忽略）。
   - 若执行过程中检测到命令链**死循环**，扩展会**中止执行**并提示循环链路，避免用户手动配置导致卡死。
 
 ## RegExp UI 说明

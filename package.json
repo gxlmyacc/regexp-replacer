@@ -146,20 +146,6 @@
                 "type": "string",
                 "description": "%configuration.commands.item.description%"
               },
-              "preCommands": {
-                "type": "array",
-                "description": "%configuration.commands.item.preCommands%",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "postCommands": {
-                "type": "array",
-                "description": "%configuration.commands.item.postCommands%",
-                "items": {
-                  "type": "string"
-                }
-              },
               "rules": {
                 "type": "array",
                 "description": "%configuration.commands.item.rules%",
