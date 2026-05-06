@@ -51,6 +51,28 @@ describe('webview replacePreview', () => {
     expect(res.fullText).toBe('aL1\nbL2\n');
   });
 
+  test('regex replace: 单捕获组时 $133 不贪心为两位组号', () => {
+    const res = computeReplacePreview(
+      { engine: 'regex', find: '(\\d)', replace: '', flags: 'g' },
+      'x1',
+      '$133',
+      { maxPreviewChars: 1000 },
+    );
+    expect(res.replacedCount).toBe(1);
+    expect(res.fullText).toBe('x133');
+  });
+
+  test('regex replace: 命名捕获 $<name> 在预览中展开', () => {
+    const res = computeReplacePreview(
+      { engine: 'regex', find: 'v=(?<id>\\d+)', replace: '', flags: 'g' },
+      'v=12;',
+      '[$<id>]',
+      { maxPreviewChars: 1000 },
+    );
+    expect(res.replacedCount).toBe(1);
+    expect(res.fullText).toBe('[12];');
+  });
+
   test('maxPreviewChars: truncates preview but keeps fullText', () => {
     const res = computeReplacePreview(
       { engine: 'text', find: 'a', replace: '', flags: 'g' } as any,

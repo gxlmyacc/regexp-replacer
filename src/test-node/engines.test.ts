@@ -158,6 +158,60 @@ suite('node unit: engines', () => {
     assert.strictEqual(out, '[b|a|c|$|X]');
   });
 
+  test('template: 仅 1 个捕获组时 $133 按 $1 展开后保留后续数字', () => {
+    const out = expandReplacementTemplate('$133', {
+      match: 'x',
+      groups: ['a'],
+      offset: 0,
+      input: 'x',
+    });
+    assert.strictEqual(out, 'a33');
+  });
+
+  test('template: $<name> 从 namedGroups 取值；未知组名为空', () => {
+    assert.strictEqual(
+      expandReplacementTemplate('p=$<id>', {
+        match: 'm',
+        groups: ['1'],
+        offset: 0,
+        input: 'm',
+        namedGroups: { id: '42' },
+      }),
+      'p=42',
+    );
+    assert.strictEqual(
+      expandReplacementTemplate('[$<missing>]', {
+        match: 'm',
+        groups: ['x'],
+        offset: 0,
+        input: 'm',
+        namedGroups: { id: '42' },
+      }),
+      '[]',
+    );
+  });
+
+  test('regex: 命名捕获在替换中用 $<name> 展开', () => {
+    const res = applyRule('v=12;', r({ engine: 'regex', find: 'v=(?<id>\\d+)', replace: '[$<id>]', flags: 'g' }));
+    assert.strictEqual(res.text, '[12];');
+    assert.strictEqual(res.replacedCount, 1);
+  });
+
+  test('regex: 命名与编号捕获并存时 $<letter> 与 $2', () => {
+    const res = applyRule(
+      'a1b2',
+      r({ engine: 'regex', find: '(?<letter>[a-z])(\\d)', replace: '[$<letter>-$2]', flags: 'g' }),
+    );
+    assert.strictEqual(res.text, '[a-1][b-2]');
+    assert.strictEqual(res.replacedCount, 2);
+  });
+
+  test('regex: 仅命名捕获时 $<n> 与 $1 指向同一捕获', () => {
+    const res = applyRule('x=3', r({ engine: 'regex', find: 'x=(?<n>\\d)', replace: '$<n>=$1', flags: 'g' }));
+    assert.strictEqual(res.text, '3=3');
+    assert.strictEqual(res.replacedCount, 1);
+  });
+
   test('template: supports escaped newline/tab/backslash', () => {
     const out = expandReplacementTemplate('line1\\n$1\\t\\\\', {
       match: 'x',

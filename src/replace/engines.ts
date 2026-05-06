@@ -217,31 +217,81 @@ type ReplacementContext = {
 };
 
 /**
- * 将 replacement 模板按 JS String.replace 规则展开。
+ * 将 replacement 模板按与 UI 高亮一致的规则展开：`$` 后 1～2 位数字仅在组号落在当前匹配实际捕获组数量内时替换，否则退回更短匹配（如仅 `$1`）或保留字面 `$`。
+ * 特殊占位仍为 `$& $` $' $$ $<name>`（与原先一致）。
  *
  * @param template 替换模板字符串。
- * @param ctx 替换上下文（match、分组、offset、原始输入等）。
+ * @param ctx 替换上下文（match、分组、offset、原始输入等）；`groups.length` 为当前匹配捕获组个数。
  * @returns 展开后的替换字符串。
  */
 export function expandReplacementTemplate(template: string, ctx: ReplacementContext): string {
-  const decodedTemplate = decodeEscapedReplacementTemplate(template);
-  // 参考 JS 规范：$& $` $' $$ $n $nn $<name>
-  return decodedTemplate.replace(
-    /\$(\$|&|`|'|<[^>]+>|\d{1,2})/g,
-    (m: string, token: string): string => {
-      if (token === '$') return '$';
-      if (token === '&') return ctx.match;
-      if (token === '`') return ctx.input.slice(0, ctx.offset);
-      if (token === "'") return ctx.input.slice(ctx.offset + ctx.match.length);
-      if (token.startsWith('<') && token.endsWith('>')) {
-        const name = token.slice(1, -1);
-        return ctx.namedGroups?.[name] ?? '';
+  const s = decodeEscapedReplacementTemplate(template);
+  const maxN = Math.min(99, Math.max(0, ctx.groups.length));
+  let out = '';
+  let i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (ch !== '$') {
+      out += ch;
+      i += 1;
+      continue;
+    }
+    const next = s[i + 1];
+    if (next === undefined) {
+      out += '$';
+      i += 1;
+      continue;
+    }
+    if (next === '$') {
+      out += '$';
+      i += 2;
+      continue;
+    }
+    if (next === '&') {
+      out += ctx.match;
+      i += 2;
+      continue;
+    }
+    if (next === '`') {
+      out += ctx.input.slice(0, ctx.offset);
+      i += 2;
+      continue;
+    }
+    if (next === "'") {
+      out += ctx.input.slice(ctx.offset + ctx.match.length);
+      i += 2;
+      continue;
+    }
+    if (next === '<') {
+      const end = s.indexOf('>', i + 2);
+      if (end > i + 2) {
+        const name = s.slice(i + 2, end);
+        out += ctx.namedGroups?.[name] ?? '';
+        i = end + 1;
+        continue;
       }
-      const n = Number(token);
-      if (!Number.isFinite(n) || n <= 0) return m;
-      return ctx.groups[n - 1] ?? '';
-    },
-  );
+    }
+    if (next && /\d/.test(next) && maxN >= 1) {
+      const next2 = s[i + 2];
+      if (next2 && /\d/.test(next2)) {
+        const twoVal = Number.parseInt(`${next}${next2}`, 10);
+        if (twoVal >= 1 && twoVal <= maxN) {
+          out += ctx.groups[twoVal - 1] ?? '';
+          i += 3;
+          continue;
+        }
+      }
+      const oneVal = Number.parseInt(next, 10);
+      if (oneVal >= 1 && oneVal <= maxN) {
+        out += ctx.groups[oneVal - 1] ?? '';
+        i += 2;
+        continue;
+      }
+    }
+    out += '$';
+    i += 1;
+  }
+  return out;
 }
 
 /**
@@ -250,7 +300,7 @@ export function expandReplacementTemplate(template: string, ctx: ReplacementCont
  * @param template 用户输入的替换模板文本。
  * @returns 解析后的模板文本（如 `\\n` -> 换行、`\\t` -> 制表符）。
  */
-function decodeEscapedReplacementTemplate(template: string): string {
+export function decodeEscapedReplacementTemplate(template: string): string {
   let out = '';
   for (let i = 0; i < template.length; i += 1) {
     const ch = template[i];

@@ -1,6 +1,10 @@
 import type { ReplaceRule } from '../tester/matchHighlighter';
 import { buildSearchRegex } from '../tester/matchHighlighter';
-import { applyMapFirstMatchToFragment } from '../../../../src/replace/engines';
+import {
+  applyMapFirstMatchToFragment,
+  decodeEscapedReplacementTemplate,
+  expandReplacementTemplate,
+} from '../../../../src/replace/engines';
 
 export type ReplacePreviewResult = {
   replacedCount: number;
@@ -186,84 +190,3 @@ export function computeReplacePreview(
 
   return { replacedCount, previewText, previewParts, fullText };
 }
-
-type ReplacementContext = {
-  match: string;
-  groups: string[];
-  offset: number;
-  input: string;
-  namedGroups?: Record<string, string>;
-};
-
-/**
- * 将 replacement 模板按 JS String.replace 规则展开。
- *
- * @param template 替换模板字符串。
- * @param ctx 替换上下文（match、分组、offset、原始输入等）。
- * @returns 展开后的替换字符串。
- */
-function expandReplacementTemplate(template: string, ctx: ReplacementContext): string {
-  const decodedTemplate = decodeEscapedReplacementTemplate(template);
-  return decodedTemplate.replace(
-    /\$(\$|&|`|'|<[^>]+>|\d{1,2})/g,
-    (m: string, token: string): string => {
-      if (token === '$') return '$';
-      if (token === '&') return ctx.match;
-      if (token === '`') return ctx.input.slice(0, ctx.offset);
-      if (token === "'") return ctx.input.slice(ctx.offset + ctx.match.length);
-      if (token.startsWith('<') && token.endsWith('>')) {
-        const name = token.slice(1, -1);
-        return ctx.namedGroups?.[name] ?? '';
-      }
-      const n = Number(token);
-      if (!Number.isFinite(n) || n <= 0) return m;
-      return ctx.groups[n - 1] ?? '';
-    },
-  );
-}
-
-/**
- * 解析替换模板中的常见转义序列，确保预览与实际替换一致。
- *
- * @param template 用户输入的替换模板文本。
- * @returns 解析后的模板文本（如 `\\n` -> 换行、`\\t` -> 制表符）。
- */
-function decodeEscapedReplacementTemplate(template: string): string {
-  let out = '';
-  for (let i = 0; i < template.length; i += 1) {
-    const ch = template[i];
-    if (ch !== '\\') {
-      out += ch;
-      continue;
-    }
-    const next = template[i + 1];
-    if (next === undefined) {
-      out += '\\';
-      continue;
-    }
-    if (next === 'n') {
-      out += '\n';
-      i += 1;
-      continue;
-    }
-    if (next === 'r') {
-      out += '\r';
-      i += 1;
-      continue;
-    }
-    if (next === 't') {
-      out += '\t';
-      i += 1;
-      continue;
-    }
-    if (next === '\\') {
-      out += '\\';
-      i += 1;
-      continue;
-    }
-    out += `\\${next}`;
-    i += 1;
-  }
-  return out;
-}
-
