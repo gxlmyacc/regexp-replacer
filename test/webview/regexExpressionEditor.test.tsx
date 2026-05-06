@@ -73,6 +73,21 @@ describe('RegexExpressionEditor', () => {
     }
   });
 
+  test('捕获组开括号后渲染 VS Code 式占宽序号 inlay（.rrRegexCaptureInlay）', () => {
+    const host = mount(
+      <I18nProvider>
+        <RegexExpressionEditor value="(a)" uiLanguage="zh-CN" onChange={() => {}} onAfterChange={() => {}} />
+      </I18nProvider>,
+    );
+    try {
+      const inlay = host.querySelector('.cm-content .rrRegexCaptureInlay');
+      expect(inlay).not.toBeNull();
+      expect(inlay?.textContent).toBe('1');
+    } finally {
+      unmount(host);
+    }
+  });
+
   test('通过 EditorView.dispatch 触发 onChange，并在 selectionSet 时执行括号配对逻辑', () => {
     const onChange = vi.fn<(v: string) => void>();
     const onAfterChange = vi.fn();

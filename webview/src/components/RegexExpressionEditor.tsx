@@ -1,12 +1,66 @@
 import React, { memo, useEffect, useMemo, useRef } from 'react';
-import { EditorView, hoverTooltip, keymap, placeholder, tooltips, type Tooltip, type ViewUpdate } from '@codemirror/view';
+import {
+  Decoration,
+  EditorView,
+  hoverTooltip,
+  keymap,
+  placeholder,
+  tooltips,
+  ViewPlugin,
+  WidgetType,
+  type Tooltip,
+  type ViewUpdate,
+} from '@codemirror/view';
 import { Compartment, EditorState, RangeSetBuilder } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-import { Decoration, ViewPlugin } from '@codemirror/view';
 import { tokenizeRegexPattern, type RegexTokenType } from '../utils';
 import { collectBracketDiagnostics, collectBracketPairs } from '../utils/regexBracketScan';
+import { scanRegexCaptureDecorHints } from '../utils/regexCaptureGroupScan';
 import type { LanguageCode } from '../i18n';
 import './RegexExpressionEditor.scss';
+
+/**
+ * 捕获组序号的内联 Widget：占布局宽度、样式贴近 VS Code inlay hint，不写入 doc。
+ */
+class CaptureIndexInlayWidget extends WidgetType {
+  /**
+   * @param index 捕获组 1-based 编号。
+   */
+  constructor(readonly index: number) {
+    super();
+  }
+
+  /**
+   * 判断是否与另一 Widget 等价，用于避免无意义的 DOM 重建。
+   *
+   * @param other 另一 Widget 实例。
+   * @returns 编号相同则为 true。
+   */
+  eq(other: CaptureIndexInlayWidget): boolean {
+    return other.index === this.index;
+  }
+
+  /**
+   * 渲染为带样式的 span（类名由 SCSS 控制）。
+   *
+   * @returns 根 DOM 节点。
+   */
+  toDOM(): HTMLElement {
+    const span = document.createElement('span');
+    span.className = 'rrRegexCaptureInlay';
+    span.textContent = String(this.index);
+    return span;
+  }
+
+  /**
+   * 忽略指向该 Widget 的事件，使点击/拖拽命中两侧真实字符。
+   *
+   * @returns 恒为 true。
+   */
+  ignoreEvent(): boolean {
+    return true;
+  }
+}
 
 export type RegexExpressionEditorProps = {
   value: string;
@@ -149,13 +203,14 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       const tokens = tokenizeRegexPattern(text);
       const builder = new RangeSetBuilder<Decoration>();
       const bracketMetaByOffset = collectBracketMetaByOffset(text);
+      const decorHints = scanRegexCaptureDecorHints(text);
       const activePair = findNearestActiveBracketPair(text, view.state.selection.main.head);
       const activeBracketOffsets = activePair ? new Set<number>([activePair.openOffset, activePair.closeOffset]) : new Set<number>();
       const activeInnerRange = activePair ? { from: activePair.openOffset, to: activePair.closeOffset + 1 } : undefined;
-      const pendingMarks: { from: number; to: number; mark: Decoration }[] = [];
+      const pendingDecos: { from: number; to: number; deco: Decoration }[] = [];
 
       /**
-       * 暂存 decoration，最后统一排序后写入，避免 RangeSetBuilder 顺序报错。
+       * 暂存 mark 装饰，最后与 Widget 合并排序后写入 RangeSet。
        *
        * @param from 起始偏移（含）。
        * @param to 结束偏移（不含）。
@@ -164,7 +219,27 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
        */
       function pushMark(from: number, to: number, className: string): void {
         if (to <= from) return;
-        pendingMarks.push({ from, to, mark: Decoration.mark({ class: className }) });
+        pendingDecos.push({ from, to, deco: Decoration.mark({ class: className }) });
+      }
+
+      /**
+       * 在捕获组开括号之后插入占宽序号 Widget。
+       * 使用 `side: -1` 使 widget 画在间隙靠「左」一侧（紧挨 `(`），空括号 `()` 时光标落在 inlay 与 `)` 之间，而非 inlay 前。
+       *
+       * @param pos 插入位置（一般为 `openOffset + 1`）。
+       * @param index 捕获组 1-based 编号。
+       * @returns 无返回值。
+       */
+      function pushCaptureInlay(pos: number, index: number): void {
+        pendingDecos.push({
+          from: pos,
+          to: pos,
+          deco: Decoration.widget({
+            widget: new CaptureIndexInlayWidget(index),
+            side: -1,
+            block: false,
+          }),
+        });
       }
 
       if (activeInnerRange) {
@@ -214,13 +289,22 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
         }
         pushMark(from, to, classForToken(tok.type));
       }
+      for (const ng of decorHints.namedGroupNameRanges) {
+        pushMark(ng.from, ng.to, 'rrRegexTok rrRegexTok--named-group-name');
+      }
       const diagnostics = collectRegexDiagnostics(text);
       for (const d of diagnostics) {
         pushMark(d.from, d.to, 'rrRegexTok rrRegexTok--error');
       }
-      pendingMarks
+      for (const c of decorHints.capturingOpens) {
+        const pos = c.openOffset + 1;
+        if (pos <= text.length) {
+          pushCaptureInlay(pos, c.index);
+        }
+      }
+      pendingDecos
         .sort((a, b) => (a.from === b.from ? a.to - b.to : a.from - b.from))
-        .forEach((item) => builder.add(item.from, item.to, item.mark));
+        .forEach((item) => builder.add(item.from, item.to, item.deco));
       return builder.finish();
     }
 

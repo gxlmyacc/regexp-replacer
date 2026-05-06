@@ -156,3 +156,32 @@
   color: var(--vscode-symbolIcon-operatorForeground, #c586c0);
 }
 
+/* 捕获组序号：小号上角标感，与正文输入区分（仍占布局宽，非 doc） */
+.rrRegexCaptureInlay {
+  display: inline-block;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 1px;
+  border-radius: 2px;
+  /* 略小于正文、上标位；字稍大于前一版，边距收紧以减占宽 */
+  font-size: 0.7em;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: super;
+  position: relative;
+  top: -0.08em;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+  /* 偏亮红/珊瑚；无底边描边，减少水平占位 */
+  color: var(--vscode-charts-red, #ff9a93);
+  background: var(--vscode-editorInlayHint-background, rgba(255, 64, 52, 0.16));
+}
+
+/* 命名捕获组组名（不含 < > 定界符）：与圆括号 token 区分 */
+.rrRegexTok--named-group-name {
+  color: var(--vscode-symbolIcon-variableForeground, #9cdcfe);
+  font-weight: 600;
+}
+

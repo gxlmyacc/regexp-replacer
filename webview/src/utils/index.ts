@@ -1,5 +1,6 @@
 import type { ReplaceCommand, ReplaceRule } from '../../../src/types';
 import type { LanguageCode } from '../i18n';
+import { collectCapturingGroupOpenOffsets } from './regexCaptureGroupScan';
 
 export type RegexTokenType =
   | 'text'
@@ -423,32 +424,6 @@ export function getMatchIndexByOffset<T extends OffsetRangeItem>(items: T[], off
  * @returns 是否包含捕获组。
  */
 export function hasAnyCapturingGroup(source: string): boolean {
-  const s = String(source ?? '');
-  let inClass = false; // [...]
-  for (let i = 0; i < s.length; i += 1) {
-    const ch = s[i];
-    if (ch === '\\') {
-      i += 1;
-      continue;
-    }
-    if (ch === '[') {
-      inClass = true;
-      continue;
-    }
-    if (ch === ']' && inClass) {
-      inClass = false;
-      continue;
-    }
-    if (inClass) continue;
-    if (ch === '(') {
-      const next = s.slice(i, i + 3);
-      // 排除常见非捕获：(?:  (?=  (?!  (?<=  (?<!
-      if (next === '(?:' || next === '(?=' || next === '(?!' || next === '(?<') {
-        continue;
-      }
-      return true;
-    }
-  }
-  return false;
+  return collectCapturingGroupOpenOffsets(String(source ?? '')).length > 0;
 }
 
