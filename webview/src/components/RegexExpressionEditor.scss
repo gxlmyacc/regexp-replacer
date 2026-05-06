@@ -126,16 +126,18 @@
   padding-bottom: 6px;
 }
 
-/* 正则错误提示 Tooltip：替代浏览器 title 气泡，保持与 VS Code 配色一致。 */
-.regexExpressionEditor .cm-tooltip .rrRegexTooltip {
+/* 正则错误提示 Tooltip：挂在 document.body 下，无 .regexExpressionEditor 祖先，勿嵌套在该块内。 */
+.cm-tooltip .rrRegexTooltip {
   max-width: 420px;
-  padding: 6px 8px;
+  padding: 8px 12px;
   border-radius: 6px;
-  line-height: 1.35;
+  line-height: 1.4;
   color: var(--vscode-editorHoverWidget-foreground, #cccccc);
   background: var(--vscode-editorHoverWidget-background, #252526);
   border: 1px solid var(--vscode-editorHoverWidget-border, rgba(255, 255, 255, 0.12));
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.28),
+    0 12px 28px rgba(0, 0, 0, 0.38);
   white-space: pre-wrap;
   word-break: break-word;
 }
