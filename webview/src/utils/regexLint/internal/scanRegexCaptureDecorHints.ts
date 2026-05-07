@@ -1,4 +1,4 @@
-import { hasUnescapedCloseBracketAfter } from './regexBracketScan';
+import { hasUnescapedCloseBracketAfter } from './hasUnescapedCloseBracketAfter';
 
 /** 捕获组开括号在源码中的偏移及其 1-based 编号（与 `$1..$n` 一致）。 */
 export type RegexCapturingGroupOpen = {
@@ -12,7 +12,7 @@ export type RegexNamedGroupNameRange = {
   to: number;
 };
 
-/** 命名捕获组前缀 `(?<name>` / `(?'name'` 的半开区间 [from,to)，含至组名结束定界符之后首字符前；与圆括号同色加粗。 */
+/** 命名捕获组前缀 `(?<name>` / `(?'name'` 的半开区间 [from,to)，用于与圆括号统一着色。 */
 export type RegexNamedGroupHeaderRange = {
   from: number;
   to: number;
@@ -23,7 +23,7 @@ export type RegexCaptureDecorScanResult = {
   capturingOpens: RegexCapturingGroupOpen[];
   /** 命名捕获组组名字符区间列表。 */
   namedGroupNameRanges: RegexNamedGroupNameRange[];
-  /** 命名捕获组整段前缀区间，供编辑器与圆括号统一着色。 */
+  /** 命名捕获组整段前缀区间，供编辑器装饰。 */
   namedGroupHeaderRanges: RegexNamedGroupHeaderRange[];
 };
 
@@ -77,8 +77,8 @@ function skipGroupCommentEnd(s: string, iCommentBody: number): number {
 }
 
 /**
- * 扫描正则源码：识别字符类/转义后，按 ECMAScript 常见规则区分捕获组与非捕获扩展，
- * 输出捕获组开括号编号及命名捕获组组名区间（用于编辑器装饰，不要求源码一定能通过 `new RegExp`）。
+ * 扫描正则源码：识别字符类/转义后，按常见 ECMAScript 写法区分捕获组与扩展，
+ * 输出捕获组开括号编号及命名捕获区间（供编辑器装饰；不要求一定能通过 `new RegExp`）。
  *
  * @param pattern 正则源码（单行字符串）。
  * @returns 捕获开括号列表、命名组名区间及命名组前缀区间。
@@ -189,14 +189,4 @@ export function scanRegexCaptureDecorHints(pattern: string): RegexCaptureDecorSc
   }
 
   return { capturingOpens, namedGroupNameRanges, namedGroupHeaderRanges };
-}
-
-/**
- * 仅返回捕获组开括号位置与 1-based 编号（`$1..$n` 顺序）。
- *
- * @param pattern 正则源码。
- * @returns 开括号列表。
- */
-export function collectCapturingGroupOpenOffsets(pattern: string): RegexCapturingGroupOpen[] {
-  return scanRegexCaptureDecorHints(pattern).capturingOpens;
 }

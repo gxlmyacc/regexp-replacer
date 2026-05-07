@@ -45,7 +45,7 @@ describe('RegexExpressionEditor', () => {
     return root.querySelectorAll('.rrRegexTok--diagnostic-underline.rrRegexTok--severity-error').length;
   }
 
-  test('[]、[ ^ ] 不产生括号未匹配装饰（与 regexBracketScan 一致）', () => {
+  test('[]、[ ^ ] 不产生括号未匹配诊断下划线', () => {
     for (const value of ['[]', '[^]']) {
       const host = mount(
         <I18nProvider>
@@ -103,7 +103,7 @@ describe('RegexExpressionEditor', () => {
     }
   });
 
-  test('命名捕获组前缀带 .rrRegexTok--named-group-header，与圆括号同色', () => {
+  test('命名捕获组前缀带 .rrRegexTok--named-group-header', () => {
     const host = mount(
       <I18nProvider>
         <RegexExpressionEditor value="(?<year>)" uiLanguage="zh-CN" onChange={() => {}} onAfterChange={() => {}} />
@@ -116,7 +116,7 @@ describe('RegexExpressionEditor', () => {
     }
   });
 
-  test('通过 EditorView.dispatch 触发 onChange，并在 selectionSet 时执行括号配对逻辑', () => {
+  test('通过 EditorView.dispatch 触发 onChange', () => {
     const onChange = vi.fn<(v: string) => void>();
     const onAfterChange = vi.fn();
     const host = mount(
@@ -136,11 +136,6 @@ describe('RegexExpressionEditor', () => {
       });
       expect(onChange).toHaveBeenCalledWith('[()]');
       expect(onAfterChange).toHaveBeenCalled();
-
-      // 触发 selectionSet：把光标放到括号内部
-      TestUtils.act(() => {
-        view.dispatch({ selection: { anchor: 2 } });
-      });
     } finally {
       unmount(host);
     }

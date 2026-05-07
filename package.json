@@ -161,12 +161,16 @@
                     {
                       "if": {
                         "properties": {
-                          "replaceMode": { "const": "map" }
+                          "replaceMode": {
+                            "const": "map"
+                          }
                         }
                       },
                       "then": {
                         "properties": {
-                          "engine": { "const": "regex" }
+                          "engine": {
+                            "const": "regex"
+                          }
                         },
                         "required": [
                           "map"
@@ -349,6 +353,7 @@
     "@codemirror/state": "^6.6.0",
     "@codemirror/theme-one-dark": "^6.1.3",
     "@codemirror/view": "^6.41.1",
+    "@eslint-community/regexpp": "^4.12.2",
     "@popperjs/core": "^2.11.8",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { scanUnnecessaryEscapeRanges } from '../../webview/src/utils/regexUnnecessaryEscapeScan';
+import { scanUnnecessaryEscapeRanges } from '../../webview/src/utils/regexLint/internal/scanUnnecessaryEscapeRanges';
 
 describe('regexUnnecessaryEscapeScan', () => {
   test('类外 \\a 为冗余转义', () => {
@@ -144,6 +144,14 @@ describe('regexUnnecessaryEscapeScan', () => {
 
   test('类内 \\^ 冗余', () => {
     expect(scanUnnecessaryEscapeRanges('[\\^a]')).toEqual([{ from: 1, to: 3 }]);
+  });
+
+  test('类内 \\b 走冗余管线并带 char-class-b 提示（退格非单词边界）', () => {
+    expect(scanUnnecessaryEscapeRanges(String.raw`[\b]`)).toEqual([{ from: 1, to: 3, hint: 'char-class-b' }]);
+  });
+
+  test('类外 \\b 不误报', () => {
+    expect(scanUnnecessaryEscapeRanges(String.raw`\b`)).toEqual([]);
   });
 
   test('字符串末单独 \\ 不标冗余', () => {

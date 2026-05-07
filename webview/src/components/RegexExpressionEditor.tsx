@@ -14,9 +14,9 @@ import {
 import { Compartment, EditorState, RangeSetBuilder } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { tokenizeRegexPattern, type RegexTokenType } from '../utils';
-import { collectBracketPairs } from '../utils/regexBracketScan';
+import { collectBracketPairs } from '../utils/regexLint/internal/collectBracketPairs';
+import { scanRegexCaptureDecorHints } from '../utils/regexLint/internal/scanRegexCaptureDecorHints';
 import { collectRegexExpressionDiagnostics, pickDiagnosticAtPosition } from '../utils/regexExpressionDiagnostics';
-import { scanRegexCaptureDecorHints } from '../utils/regexCaptureGroupScan';
 import type { LanguageCode } from '../i18n';
 import './RegexExpressionEditor.scss';
 
@@ -67,6 +67,8 @@ export type RegexExpressionEditorProps = {
   value: string;
   placeholder?: string;
   uiLanguage: LanguageCode;
+  /** 与 `new RegExp(pattern, flags)` 一致的 flags；缺省为空字符串。 */
+  regexFlags?: string;
   onChange: (value: string) => void;
   /** 输入后触发一次重算（上游可做 debounce，此处按需每次触发）。 */
   onAfterChange: () => void;
@@ -75,13 +77,13 @@ export type RegexExpressionEditorProps = {
 };
 
 /**
- * 正则表达式编辑器（CodeMirror 版）：在输入框内对正则 token 进行高亮显示。
+ * 正则表达式编辑器（CodeMirror 版）：token/括号/捕获序号装饰 + regexLint 诊断下划线与悬浮提示。
  *
  * @param props 组件属性；其中 `onBlur` 可选，在编辑器失焦时触发（例如映射表行内校验）。
  * @returns React 元素。
  */
 export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: RegexExpressionEditorProps): React.ReactElement {
-  const { value, placeholder: ph, uiLanguage, onChange, onAfterChange, onBlur } = props;
+  const { value, placeholder: ph, uiLanguage, regexFlags = '', onChange, onAfterChange, onBlur } = props;
   const hostRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
   const lastValueRef = useRef<string>(value ?? '');
@@ -115,7 +117,6 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
         },
         '&.cm-focused': {
           borderColor: 'var(--rr-focus-border, var(--rr-input-focused-border))',
-          // boxShadow: '0 0 0 1px rgba(0, 127, 212, 0.2)',
         },
         '.cm-scroller': {
           fontFamily: 'inherit',
@@ -147,7 +148,6 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       const nextRaw = u.state.doc.toString();
       const next = normalizeSingleLine(nextRaw);
       lastValueRef.current = next;
-      // 若用户输入了换行，这里会被压平；同时把压平后的值写回到父组件（受控源）。
       onChange(next);
       onAfterChange();
     });
@@ -161,13 +161,23 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
         })
       : [];
 
-    // 正则 token 高亮：用 Decoration.mark 给不同 token 区段加 class。
     const tokenHighlight = ViewPlugin.fromClass(
       class {
         decorations;
+        /**
+         * 初始化装饰（token、括号、inlay、诊断）。
+         *
+         * @param view 编辑器视图。
+         */
         constructor(view: EditorView) {
           this.decorations = buildRegexTokenDecorations(view);
         }
+        /**
+         * 文档/视口/选区/焦点变化时重建装饰。
+         *
+         * @param update CodeMirror 视图更新描述。
+         * @returns 无返回值。
+         */
         update(update: ViewUpdate) {
           if (update.docChanged || update.viewportChanged || update.selectionSet || update.focusChanged) {
             this.decorations = buildRegexTokenDecorations(update.view);
@@ -205,7 +215,6 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       const builder = new RangeSetBuilder<Decoration>();
       const bracketMetaByOffset = collectBracketMetaByOffset(text);
       const decorHints = scanRegexCaptureDecorHints(text);
-      // 失焦后选区仍在；不把光标当作「在括号内」，用 -1 清除 pair-active / 括号内范围高亮。
       const cursorHead = view.hasFocus ? view.state.selection.main.head : -1;
       const activePair = findNearestActiveBracketPair(text, cursorHead);
       const activeBracketOffsets = activePair ? new Set<number>([activePair.openOffset, activePair.closeOffset]) : new Set<number>();
@@ -226,8 +235,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       }
 
       /**
-       * 在捕获组开括号之后插入占宽序号 Widget。
-       * 使用 `side: -1` 使 widget 画在间隙靠「左」一侧（紧挨 `(`），空括号 `()` 时光标落在 inlay 与 `)` 之间，而非 inlay 前。
+       * 在捕获组开括号之后插入占宽序号 Widget（`side: -1` 贴近 `(`）。
        *
        * @param pos 插入位置（一般为 `openOffset + 1`）。
        * @param index 捕获组 1-based 编号。
@@ -255,7 +263,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       }
 
       /**
-       * 判断半开区间 [tFrom,tTo) 是否完全落在某一命名捕获组前缀 `(?<…>` / `(?'…'` 区间内。
+       * 判断半开区间 [tFrom,tTo) 是否完全落在某一命名捕获组前缀区间内。
        *
        * @param tFrom 起始偏移（含）。
        * @param tTo 结束偏移（不含）。
@@ -320,7 +328,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
           pushMark(from, to, classForToken(tok.type));
         }
       }
-      const diagnostics = collectRegexExpressionDiagnostics(text, uiLanguage);
+      const diagnostics = collectRegexExpressionDiagnostics(text, regexFlags, uiLanguage);
       for (const d of diagnostics) {
         pushMark(
           d.from,
@@ -359,6 +367,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     /**
      * 根据分组层级返回括号装饰类名（超过 6 层后循环使用配色）。
      *
+     * @param kind 圆括号 / 方括号 / 花括号。
      * @param depth 当前括号层级（从 1 开始）。
      * @returns className。
      */
@@ -379,7 +388,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     }
 
     /**
-     * 根据光标偏移查找“最近层级”的括号对（支持 ()、[]、{}）。
+     * 根据光标偏移查找「最近层级」的括号对（支持 ()、[]、{}）。
      *
      * @param text 正则文本。
      * @param cursorOffset 光标偏移。
@@ -392,7 +401,6 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       const pairs = collectBracketPairs(text);
       let nearest: { openOffset: number; closeOffset: number; depth: number; kind: 'round' | 'square' | 'curly' } | undefined;
       for (const pair of pairs) {
-        // 仅当光标位于括号内部（开括号之后、闭括号之前）时，才视为处于该层级。
         if (!(pair.openOffset < cursorOffset && cursorOffset <= pair.closeOffset)) continue;
         const span = pair.closeOffset - pair.openOffset;
         const nearestSpan = nearest ? nearest.closeOffset - nearest.openOffset : Number.MAX_SAFE_INTEGER;
@@ -434,14 +442,14 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     }
 
     /**
-     * 基于诊断信息提供悬浮提示：当鼠标悬停到错误下划线范围时，显示错误消息 Tooltip。
+     * 基于诊断信息提供悬浮提示（命中诊断区间时展示 Tooltip）。
      *
      * @returns CodeMirror 扩展（hoverTooltip）。
      */
     function createDiagnosticsHoverTooltip() {
       return hoverTooltip((view, pos): Tooltip | null => {
         const text = view.state.doc.toString();
-        const diagnostics = collectRegexExpressionDiagnostics(text, uiLanguage);
+        const diagnostics = collectRegexExpressionDiagnostics(text, regexFlags, uiLanguage);
         const hit = pickDiagnosticAtPosition(diagnostics, pos);
         if (!hit) return null;
         return {
@@ -459,12 +467,10 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     }
 
     return [
-      /* Tooltip 根挂在 body，避免落在 .cm-editor/.cm-scroller 内被 overflow 裁切 */
       tooltips({ parent: document.body }),
       history(),
       keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
       ph ? placeholder(ph) : [],
-      // 允许自动换行（与原 textarea 体验更接近）
       EditorView.lineWrapping,
       vscodeTheme,
       tokenHighlight,
@@ -472,7 +478,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       updateListener,
       blurHandlers,
     ];
-  }, [onAfterChange, onBlur, onChange, ph, uiLanguage]);
+  }, [onAfterChange, onBlur, onChange, ph, regexFlags, uiLanguage]);
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -518,4 +524,3 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
 
   return <div ref={hostRef} className="regexExpressionEditor" />;
 });
-

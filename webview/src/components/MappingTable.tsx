@@ -5,7 +5,7 @@ import type { LanguageCode } from '../i18n';
 import { RegexExpressionEditor } from './RegexExpressionEditor';
 import { ReplacementTemplateField } from './ReplacementTemplateField';
 import { createId } from '../utils';
-import { collectCapturingGroupOpenOffsets } from '../utils/regexCaptureGroupScan';
+import { countCapturingGroups } from '../utils/regexLint/countCapturingGroups';
 import { Toast } from './base';
 import './MappingTable.scss';
 
@@ -51,6 +51,8 @@ export type MappingTableProps = {
   map: MapReplaceConfig | undefined;
   onChangeMap: (nextMap: MapReplaceConfig) => void;
   uiLanguage: LanguageCode;
+  /** 正则模式下与 `new RegExp` 一致的 flags；缺省为空。 */
+  regexFlags?: string;
   t: MappingTableStrings;
 };
 
@@ -61,7 +63,7 @@ export type MappingTableProps = {
  * @returns React 元素。
  */
 export const MappingTable = memo(function MappingTable(props: MappingTableProps): React.ReactElement {
-  const { map, onChangeMap, uiLanguage, t } = props;
+  const { map, onChangeMap, uiLanguage, regexFlags = '', t } = props;
   const [rows, setRows] = useState<MappingRow[]>([{ uid: createId(), find: '', replace: '' }]);
   const [errorFinds, setErrorFinds] = useState<Set<string>>(() => new Set());
   /** 仅在「匹配」失焦校验发现为空后记录 uid，避免未编辑的默认空白行一上来就标红。 */
@@ -381,6 +383,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
                         value={r.find}
                         placeholder={colLeft}
                         uiLanguage={uiLanguage}
+                        regexFlags={regexFlags}
                         onChange={(nextValue) => updateRow(idx, { find: nextValue })}
                         onAfterChange={() => {
                           validateUniqueMatchSilent(rowsRef.current);
@@ -406,7 +409,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
                       onChange={(nextValue) => updateRow(idx, { replace: nextValue })}
                       placeholder={colRight}
                       highlightEnabled={true}
-                      maxCaptureGroupCount={collectCapturingGroupOpenOffsets(r.find).length}
+                      maxCaptureGroupCount={countCapturingGroups(r.find, regexFlags)}
                       variant="line"
                     />
                   ) : (

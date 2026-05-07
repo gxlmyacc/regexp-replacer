@@ -169,6 +169,38 @@ export const zhCN = {
   regexSyntaxDetailUnmatched: '存在未匹配的括号或分隔符',
   /** 不必要转义警告（表达式编辑器波浪线 tooltip）。 */
   regexRedundantEscapeWarning: '此处转义多余，可直接使用该字符',
+  /** 字符类内 `\b` 易混：实为退格而非单词边界（与不必要转义同一告警级别）。 */
+  regexRedundantEscapeCharClassBackspaceB:
+    '在字符类 `[]` 中，`\\b` 表示退格（U+0008），不是单词边界。单词边界请把 `\\b` 写在类外；若本意是退格可改用 `\\x08` 等更显式写法。',
+  /** 数字反向引用此前无对应捕获组；{n} 为引用编号。 */
+  regexOrphanNumericBackreferenceWarningFmt: '此前不存在第 {n} 个捕获组，这里的反斜杠可能多余。',
+
+  /** 警告：未使用 `u`/`v` 时字符类中的 `\d`/`\w`/`\s` 系列按传统 ASCII 倾向解释。 */
+  regexWarningCharClassShorthandAscii:
+    '未使用 `u`/`v` 时，字符类里的 `\\d`、`\\w`、`\\s` 等按传统（偏 ASCII）集合解释；若需 Unicode 语义可加 `u` 并使用 `\\p{…}`。',
+
+  /** 建议：`[\s\S]` 等与已启用 `s` 时的 `.` 等价。 */
+  regexSuggestionDotAllEquivalentUseDot: '该类匹配任意字符；已启用 `s` 时可改用 `.`。',
+  /** 建议：`[\s\S]` 等匹配含换行的任意字符，可考虑 `.` + `s`（dotAll）。 */
+  regexSuggestionDotAllEquivalentNeedFlag:
+    '该类匹配任意字符（含换行）；若语义一致，可考虑使用带 `s`（dotAll）标志下的 `.`。',
+
+  /** 建议：花括号量词 `{1}` 与单次匹配等价，可省略量词。 */
+  regexSuggestionQuantifierBraceRedundantOne: '「{1}」量词多余，前面原子本身只匹配一次，可删去该量词。',
+  /** 建议：`{1,}` 与 `+` 等价。 */
+  regexSuggestionQuantifierBracePreferPlus: '可写成 `+`，与 `{1,}` 含义相同且更短。',
+  /** 建议：`{1,}?` 与 `+?` 等价。 */
+  regexSuggestionQuantifierBracePreferPlusLazy: '可写成 `+?`，与 `{1,}?` 含义相同且更短。',
+  /** 建议：`{0,}` 与 `*` 等价。 */
+  regexSuggestionQuantifierBracePreferStar: '可写成 `*`，与 `{0,}` 含义相同且更短。',
+  /** 建议：`{0,}?` 与 `*?` 等价。 */
+  regexSuggestionQuantifierBracePreferStarLazy: '可写成 `*?`，与 `{0,}?` 含义相同且更短。',
+  /** 建议：`{0,1}` 与 `?` 等价。 */
+  regexSuggestionQuantifierBracePreferOptional: '可写成 `?`，与 `{0,1}` 含义相同且更短。',
+  /** 建议：`{0,1}?` 与 `??` 等价。 */
+  regexSuggestionQuantifierBracePreferOptionalLazy: '可写成 `??`，与 `{0,1}?` 含义相同且更短。',
+  /** 建议：`{n,n}` 简写；`{short}`/`{long}` 由规则替换。 */
+  regexSuggestionQuantifierBraceRedundantNNFmt: '固定次数重复可写成 `{short}`，与 `{long}` 等价。',
 
   /** 括号诊断：多余的闭括号；{ch} 为字符本身。 */
   regexBracketUnmatchedClose: '未匹配的右括号 {ch}',

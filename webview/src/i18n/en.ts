@@ -163,6 +163,42 @@ export const en = {
   regexSyntaxDetailUnmatched: 'Unmatched delimiter',
   /** 不必要转义警告（表达式编辑器波浪线 tooltip）。 */
   regexRedundantEscapeWarning: 'Redundant escape; this character does not need a backslash.',
+  /** 字符类内 `\b` 易混：实为退格而非单词边界（与不必要转义同一告警级别）。 */
+  regexRedundantEscapeCharClassBackspaceB:
+    'Inside `[]`, `\\b` matches a BACKSPACE (U+0008), not a word boundary. Put `\\b` outside the class for word boundaries, or use `\\x08` if you meant backspace.',
+  /** 数字反向引用此前无对应捕获组；{n} 为引用编号。 */
+  regexOrphanNumericBackreferenceWarningFmt:
+    'There is no capturing group {n} before this; the backslash may be redundant.',
+
+  /** 警告：未使用 `u`/`v` 时字符类中的 `\d`/`\w`/`\s` 系列按传统 ASCII 倾向集合解释。 */
+  regexWarningCharClassShorthandAscii:
+    'Without `u`/`v`, `\\d`, `\\w`, and `\\s` inside character classes use legacy (ASCII‑biased) ranges; add `u` and use `\\p{...}` if you need Unicode semantics.',
+
+  /** 建议：`[\s\S]` 等与已启用 `s` 时的 `.` 等价。 */
+  regexSuggestionDotAllEquivalentUseDot:
+    'This character class matches any character; with the `s` flag you can use `.` instead.',
+  /** 建议：`[\s\S]` 等匹配含换行任意字符，可考虑 `.` 配合 `s`（dotAll）。 */
+  regexSuggestionDotAllEquivalentNeedFlag:
+    'This character class matches any character including newlines; consider `.` with the `s` (dotAll) flag if that matches your intent.',
+
+  /** 建议：花括号量词 `{1}` 与单次匹配等价，可省略量词。 */
+  regexSuggestionQuantifierBraceRedundantOne:
+    'This `{1}` quantifier is redundant; the atom already matches exactly once.',
+  /** 建议：`{1,}` 与 `+` 等价。 */
+  regexSuggestionQuantifierBracePreferPlus: 'Use `+` instead of `{1,}` for the same meaning.',
+  /** 建议：`{1,}?` 与 `+?` 等价。 */
+  regexSuggestionQuantifierBracePreferPlusLazy: 'Use `+?` instead of `{1,}?` for the same meaning.',
+  /** 建议：`{0,}` 与 `*` 等价。 */
+  regexSuggestionQuantifierBracePreferStar: 'Use `*` instead of `{0,}` for the same meaning.',
+  /** 建议：`{0,}?` 与 `*?` 等价。 */
+  regexSuggestionQuantifierBracePreferStarLazy: 'Use `*?` instead of `{0,}?` for the same meaning.',
+  /** 建议：`{0,1}` 与 `?` 等价。 */
+  regexSuggestionQuantifierBracePreferOptional: 'Use `?` instead of `{0,1}` for the same meaning.',
+  /** 建议：`{0,1}?` 与 `??` 等价。 */
+  regexSuggestionQuantifierBracePreferOptionalLazy: 'Use `??` instead of `{0,1}?` for the same meaning.',
+  /** 建议：`{n,n}` 简写；`{short}`/`{long}` 由规则替换为 `{3}` / `{3,3}` 等形式。 */
+  regexSuggestionQuantifierBraceRedundantNNFmt:
+    'You can write `{short}` instead of `{long}` for the same repetition count.',
 
   /** 括号诊断：多余的闭括号；{ch} 为字符本身。 */
   regexBracketUnmatchedClose: 'Unmatched closing bracket {ch}',

@@ -38,6 +38,7 @@ export const RuleExpressionField = memo(function RuleExpressionField(props: Rule
           value={value}
           placeholder={placeholder}
           uiLanguage={uiLanguage}
+          regexFlags={regexEnabledFlags ?? ''}
           onChange={(v) => onChange(v)}
           onAfterChange={onAfterChange}
         />

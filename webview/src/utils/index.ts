@@ -1,6 +1,6 @@
 import type { ReplaceCommand, ReplaceRule } from '../../../src/types';
 import type { LanguageCode } from '../i18n';
-import { collectCapturingGroupOpenOffsets } from './regexCaptureGroupScan';
+import { countCapturingGroups } from './regexLint/countCapturingGroups';
 
 export type RegexTokenType =
   | 'text'
@@ -424,6 +424,6 @@ export function getMatchIndexByOffset<T extends OffsetRangeItem>(items: T[], off
  * @returns 是否包含捕获组。
  */
 export function hasAnyCapturingGroup(source: string): boolean {
-  return collectCapturingGroupOpenOffsets(String(source ?? '')).length > 0;
+  return countCapturingGroups(String(source ?? ''), '') > 0;
 }
 

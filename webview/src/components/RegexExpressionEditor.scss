@@ -114,7 +114,7 @@
   font-weight: 900;
 }
 
-/* 诊断波浪线（错误/警告共用几何）：underline-offset 过大时 hover 命中变差，故略减偏移并垫高命中区。 */
+/* 诊断波浪线（错误 / 警告 / 建议共用几何）：underline-offset 过大时 hover 命中变差，故略减偏移并垫高命中区。 */
 .rrRegexTok--diagnostic-underline {
   text-decoration-line: underline;
   text-decoration-style: dashed;
@@ -130,6 +130,10 @@
 
 .rrRegexTok--severity-warning {
   text-decoration-color: var(--vscode-editorWarning-foreground, #ffcc00);
+}
+
+.rrRegexTok--severity-suggestion {
+  text-decoration-color: var(--vscode-editorInfo-foreground, #3794ff);
 }
 
 /* 正则错误提示 Tooltip：挂在 document.body 下，无 .regexExpressionEditor 祖先，勿嵌套在该块内。 */

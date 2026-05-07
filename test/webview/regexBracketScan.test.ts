@@ -1,9 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import {
-  collectBracketDiagnostics,
-  collectBracketPairs,
-  hasUnescapedCloseBracketAfter,
-} from '../../webview/src/utils/regexBracketScan';
+import { collectBracketPairs } from '../../webview/src/utils/regexLint/internal/collectBracketPairs';
+import { hasUnescapedCloseBracketAfter } from '../../webview/src/utils/regexLint/internal/hasUnescapedCloseBracketAfter';
+import { collectBracketDiagnostics } from '../../webview/src/utils/regexLint/internal/collectBracketDiagnostics';
 
 describe('hasUnescapedCloseBracketAfter', () => {
   test('空串起始之后无 ]', () => {

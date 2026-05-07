@@ -1,7 +1,12 @@
-import { hasUnescapedCloseBracketAfter } from './regexBracketScan';
+import { hasUnescapedCloseBracketAfter } from './hasUnescapedCloseBracketAfter';
 
-/** 不必要转义片段（半开区间）。 */
-export type UnnecessaryEscapeRange = { from: number; to: number };
+/** 不必要转义片段（半开区间）；`hint` 用于类内易混写法的专项文案。 */
+export type UnnecessaryEscapeRange = {
+  from: number;
+  to: number;
+  /** 字符类内 `\b`：实为退格而非单词边界。 */
+  hint?: 'char-class-b';
+};
 
 /** 类外需反斜杠才能成为字面量或起语法作用的元字符集合（不含 `]`，类外 `]` 本身为字面量）。 */
 const META_NEED_ESC_OUTSIDE = new Set('\\^$.|?*+()[{');
@@ -35,19 +40,23 @@ function digitRunLength(s: string, start: number): number {
  * @param text 正则全文。
  * @param i 反斜杠下标。
  * @param inCharClass 是否在 `[...]` 字符类内。
- * @returns unnecessary 为 true 时表示可去掉反斜杠；advance 为本轮应前进的字符数（至少 1）。
+ * @returns unnecessary 为 true 时表示需提示（多为可删反斜杠或类内 `\b` 易混）；advance 为本轮应前进的字符数（至少 1）；hint 为专项提示类别。
  */
-function analyzeAfterBackslash(text: string, i: number, inCharClass: boolean): { unnecessary: boolean; advance: number } {
+function analyzeAfterBackslash(
+  text: string,
+  i: number,
+  inCharClass: boolean,
+): { unnecessary: boolean; advance: number; hint?: UnnecessaryEscapeRange['hint'] } {
   const next = text[i + 1];
   if (next === undefined) return { unnecessary: false, advance: 1 };
 
   if (inCharClass) {
     if (next === ']' || next === '\\') return { unnecessary: false, advance: 2 };
-    // 保守：不提示 `\-`，避免与区间连字符语义纠缠
     if (next === '-') return { unnecessary: false, advance: 2 };
 
     if ('dDsSwW'.includes(next)) return { unnecessary: false, advance: 2 };
-    if (next === 'b') return { unnecessary: false, advance: 2 };
+    // 类内 `\b` 为退格 U+0008，易被误认为单词边界；走冗余转义管线并附专项文案。
+    if (next === 'b') return { unnecessary: true, advance: 2, hint: 'char-class-b' };
     if ('nrtvf'.includes(next)) return { unnecessary: false, advance: 2 };
     if (next === '0') return { unnecessary: false, advance: 2 };
 
@@ -90,7 +99,6 @@ function analyzeAfterBackslash(text: string, i: number, inCharClass: boolean): {
     return { unnecessary: true, advance: 2 };
   }
 
-  // 字符类外
   if (next === '\\') return { unnecessary: false, advance: 2 };
   if (META_NEED_ESC_OUTSIDE.has(next)) return { unnecessary: false, advance: 2 };
 
@@ -139,10 +147,10 @@ function analyzeAfterBackslash(text: string, i: number, inCharClass: boolean): {
 }
 
 /**
- * 扫描正则源码，找出「不必要反斜杠」对应的半开区间（字符类内外规则见 analyzeAfterBackslash）。
+ * 扫描正则源码，找出「不必要反斜杠」或类内 `\b` 易混点对应的半开区间（规则见 analyzeAfterBackslash）。
  *
  * @param text 正则源码。
- * @returns 冗余转义区间列表（通常为 `\` 与被转义字符共 2 个码元）。
+ * @returns 区间列表（多为 `\` 与下一字符共 2 码元；类内 `\b` 带 `hint: 'char-class-b'`）。
  */
 export function scanUnnecessaryEscapeRanges(text: string): UnnecessaryEscapeRange[] {
   const s = String(text ?? '');
@@ -161,9 +169,11 @@ export function scanUnnecessaryEscapeRanges(text: string): UnnecessaryEscapeRang
     }
 
     if (ch === '\\') {
-      const { unnecessary, advance } = analyzeAfterBackslash(s, i, inCharClass);
+      const { unnecessary, advance, hint } = analyzeAfterBackslash(s, i, inCharClass);
       if (unnecessary && advance >= 2) {
-        out.push({ from: i, to: i + advance });
+        const item: UnnecessaryEscapeRange = { from: i, to: i + advance };
+        if (hint) item.hint = hint;
+        out.push(item);
       }
       i += advance;
       continue;

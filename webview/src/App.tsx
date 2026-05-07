@@ -27,7 +27,6 @@ import {
   Splitter,
   Layout,
   Icon,
-  Tag,
   Button,
 } from './components/base';
 import { TabBar } from './components/base';
@@ -48,7 +47,7 @@ import {
   tokenizeRegexPattern,
 } from './utils';
 import { copyTextToClipboard } from './utils/clipboard';
-import { collectCapturingGroupOpenOffsets } from './utils/regexCaptureGroupScan';
+import { countCapturingGroups } from './utils/regexLint/countCapturingGroups';
 import { fetchAndSanitizeDevSeedCommands, mergeDevSeedDisplayFields } from './utils/devSeedRelocale';
 import { Toast } from './components/base';
 import type { ToolsTab } from './hooks/useRuleUiCache';
@@ -627,8 +626,9 @@ export function App(): React.ReactElement {
   /** 主规则「查找」正则的捕获组个数，供替换模板 `$n` 高亮分词（避免 `$1` 后数字被并入 `$13`）。 */
   const replacementTemplateMaxCaptureGroups = useMemo(() => {
     if (selectedRule?.engine !== 'regex') return 0;
-    return collectCapturingGroupOpenOffsets(String(selectedRule.find ?? '')).length;
-  }, [selectedRule?.engine, selectedRule?.find]);
+    const flags = selectedRule.flags ?? 'g';
+    return countCapturingGroups(String(selectedRule.find ?? ''), flags);
+  }, [selectedRule?.engine, selectedRule?.find, selectedRule?.flags]);
   const effectiveReplaceMode = canReplaceMap ? replaceMode : 'template';
   const currentMatchIndex = uiCache.currentMatchIndex;
   const testText = uiCache.testText;
@@ -642,81 +642,6 @@ export function App(): React.ReactElement {
   const setApplyPrevRules = uiCache.setApplyPrevRules;
 
   const matches = testerMatches.matches;
-  const matchError = testerMatches.matchError;
-  const expressionError = useMemo(() => {
-    const rule = selected?.rules?.[selectedRuleIndex];
-    if (!rule || rule.engine !== 'regex') return undefined;
-
-    /**
-     * 检测正则源码的括号配对问题（支持 ()、[]、{}；忽略转义字符；字符类 `[...]` 内按字面量处理）。
-     *
-     * @param source 正则源码（不含 /.../）。
-     * @returns 若存在括号问题返回错误短句，否则返回 undefined。
-     */
-    function getBracketProblem(source: string): string | undefined {
-      const text = String(source ?? '');
-      const stack: { ch: '(' | '[' | '{'; offset: number }[] = [];
-      const closeToOpen: Record<string, '(' | '[' | '{'> = { ')': '(', ']': '[', '}': '{' };
-      let escaped = false;
-      let inCharClass = false;
-      let charClassOpenOffset = -1;
-
-      for (let i = 0; i < text.length; i += 1) {
-        const ch = text[i] as string;
-        if (escaped) {
-          escaped = false;
-          continue;
-        }
-        if (ch === '\\') {
-          escaped = true;
-          continue;
-        }
-        if (inCharClass) {
-          if (ch === ']') {
-            const isFirst = i === charClassOpenOffset + 1;
-            const isFirstAfterCaret = text[charClassOpenOffset + 1] === '^' && i === charClassOpenOffset + 2;
-            if (isFirst || isFirstAfterCaret) continue;
-            const top = stack[stack.length - 1];
-            if (top?.ch === '[') stack.pop();
-            inCharClass = false;
-            charClassOpenOffset = -1;
-          }
-          continue;
-        }
-        if (ch === '(' || ch === '[' || ch === '{') {
-          stack.push({ ch, offset: i });
-          if (ch === '[') {
-            inCharClass = true;
-            charClassOpenOffset = i;
-          }
-          continue;
-        }
-        if (ch === ')' || ch === ']' || ch === '}') {
-          const expected = closeToOpen[ch];
-          const top = stack[stack.length - 1];
-          if (!top) return `未匹配的右括号 ${ch}`;
-          if (top.ch !== expected) return `括号不匹配：期望 ${top.ch === '(' ? ')' : top.ch === '[' ? ']' : '}'}，实际为 ${ch}`;
-          stack.pop();
-        }
-      }
-      const firstLeft = stack[0];
-      if (firstLeft) return `未匹配的左括号 ${firstLeft.ch}`;
-      return undefined;
-    }
-
-    const bracketProblem = getBracketProblem(rule.find ?? '');
-    if (bracketProblem) return bracketProblem;
-
-    try {
-      // 仅做语法校验，确保顶部错误提示可即时展示。
-      new RegExp(rule.find ?? '', rule.flags ?? 'g');
-      return undefined;
-    } catch (e) {
-      const raw = e instanceof Error ? e.message : String(e);
-      return lang === 'zh-CN' ? `正则语法错误：${raw}` : `Regex syntax error: ${raw}`;
-    }
-  }, [lang, selected, selectedRuleIndex]);
-  const topMatchError = matchError ?? expressionError;
 
   const toolsPreviewFillClassName = 'toolsPreview toolsPreviewFill';
 
@@ -1463,13 +1388,6 @@ export function App(): React.ReactElement {
                 </span>
               </span>
               <span className="testEditorMeta">
-                {topMatchError ? (
-                  <Tooltip content={topMatchError}>
-                    <Tag tone="danger" size="sm" className="testEditorErrorBadge" aria-label={topMatchError}>
-                      {lang === 'zh-CN' ? '错误' : 'ERROR'}
-                    </Tag>
-                  </Tooltip>
-                ) : null}
                 <span>{`${t.matches}: ${matches.length}`}</span>
               </span>
             </div>
@@ -1570,6 +1488,7 @@ export function App(): React.ReactElement {
                 <MappingTable
                   map={(selectedRule as any)?.map}
                   uiLanguage={lang}
+                  regexFlags={regexPreview?.flags ?? ''}
                   t={{
                     title: (t as any).mappingTableTitle,
                     colMatch: (t as any).mappingColMatch,
