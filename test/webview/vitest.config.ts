@@ -1,4 +1,8 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+
+const vitestConfigDir = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Webview 单元测试配置（Vitest）。
@@ -6,6 +10,12 @@ import { defineConfig } from 'vitest/config';
  * @returns Vitest 配置对象。
  */
 export default defineConfig({
+  resolve: {
+    // 与 webview/vite.config.ts 一致，保证 vi.mock('use-modal-ref') 与源码解析到同一 es 入口。
+    alias: {
+      'use-modal-ref': path.resolve(vitestConfigDir, '..', '..', 'node_modules', 'use-modal-ref', 'es', 'index.js'),
+    },
+  },
   test: {
     environment: 'jsdom',
     include: ['test/webview/**/*.test.{ts,tsx}'],
