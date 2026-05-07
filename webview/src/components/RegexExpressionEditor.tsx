@@ -11,12 +11,15 @@ import {
   type Tooltip,
   type ViewUpdate,
 } from '@codemirror/view';
-import { Compartment, EditorState, RangeSetBuilder } from '@codemirror/state';
+import { Compartment, EditorState, Prec, RangeSetBuilder } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-import { tokenizeRegexPattern, type RegexTokenType } from '../utils';
+import type { RegexSemanticKind } from '../utils/regexHighlight';
+import { buildRegexHighlightModel } from '../utils/regexHighlight';
+import type { RegexBracketPair } from '../utils/regexLint/internal/collectBracketPairs';
 import { collectBracketPairs } from '../utils/regexLint/internal/collectBracketPairs';
 import { scanRegexCaptureDecorHints } from '../utils/regexLint/internal/scanRegexCaptureDecorHints';
 import { collectRegexExpressionDiagnostics, pickDiagnosticAtPosition } from '../utils/regexExpressionDiagnostics';
+import { parseRegExpPattern, type ParseRegExpPatternResult } from '../utils/regexLint/parseRegExpPattern';
 import type { LanguageCode } from '../i18n';
 import './RegexExpressionEditor.scss';
 
@@ -77,7 +80,7 @@ export type RegexExpressionEditorProps = {
 };
 
 /**
- * 正则表达式编辑器（CodeMirror 版）：token/括号/捕获序号装饰 + regexLint 诊断下划线与悬浮提示。
+ * 正则表达式编辑器（CodeMirror 版）：`regexHighlight` 语义模型 + 括号/捕获序号装饰 + regexLint 诊断下划线与悬浮提示。
  *
  * @param props 组件属性；其中 `onBlur` 可选，在编辑器失焦时触发（例如映射表行内校验）。
  * @returns React 元素。
@@ -89,6 +92,8 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
   const lastValueRef = useRef<string>(value ?? '');
   const isApplyingValueRef = useRef(false);
   const extCompartmentRef = useRef<Compartment | null>(null);
+  /** 与最近一次装饰构建共用 `parseRegExpPattern`，供悬浮诊断避免重复解析。 */
+  const regexParseCacheRef = useRef<{ text: string; flags: string; result: ParseRegExpPatternResult } | null>(null);
 
   /**
    * 将文本归一化为“单行输入”的形式（去除换行），避免 paste/输入法带来多行。
@@ -142,11 +147,41 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       { dark: true },
     );
 
+    /**
+     * 拦截 Enter，不向文档插入换行（正则 pattern 应为单行）。
+     */
+    const singleLineEnterGuard = Prec.highest(
+      keymap.of([
+        {
+          key: 'Enter',
+          run: () => true,
+        },
+      ]),
+    );
+
     const updateListener = EditorView.updateListener.of((u: ViewUpdate) => {
       if (!u.docChanged) return;
       if (isApplyingValueRef.current) return;
       const nextRaw = u.state.doc.toString();
       const next = normalizeSingleLine(nextRaw);
+      if (nextRaw !== next) {
+        isApplyingValueRef.current = true;
+        try {
+          lastValueRef.current = next;
+          onChange(next);
+          onAfterChange();
+          const anchor = Math.min(u.state.selection.main.anchor, next.length);
+          u.view.dispatch({
+            changes: { from: 0, to: u.state.doc.length, insert: next },
+            selection: { anchor, head: anchor },
+          });
+        } finally {
+          queueMicrotask(() => {
+            isApplyingValueRef.current = false;
+          });
+        }
+        return;
+      }
       lastValueRef.current = next;
       onChange(next);
       onAfterChange();
@@ -186,7 +221,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
             const text = update.state.doc.toString();
             const cursorOffset = update.state.selection.main.head;
             const pairs = collectBracketPairs(text);
-            const nearest = findNearestActiveBracketPair(text, cursorOffset);
+            const nearest = findNearestActiveBracketPair(pairs, cursorOffset);
             const activeOffsets = nearest ? [nearest.openOffset, nearest.closeOffset] : [];
             logRegexDebug('selectionSet', {
               cursorOffset,
@@ -204,19 +239,21 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     );
 
     /**
-     * 基于当前 doc 生成 decorations（按 token 类型加 class）。
+     * 基于当前 doc 生成 decorations（语义 span + 括号层级 + 诊断等）。
      *
      * @param view 编辑器视图。
      * @returns decorations。
      */
     function buildRegexTokenDecorations(view: EditorView) {
       const text = view.state.doc.toString();
-      const tokens = tokenizeRegexPattern(text);
+      const parseResult = parseRegExpPattern(text, regexFlags);
+      regexParseCacheRef.current = { text, flags: regexFlags, result: parseResult };
+      const hl = buildRegexHighlightModel(text, regexFlags, parseResult);
       const builder = new RangeSetBuilder<Decoration>();
-      const bracketMetaByOffset = collectBracketMetaByOffset(text);
+      const bracketMetaByOffset = collectBracketMetaFromPairs(hl.bracketPairs);
       const decorHints = scanRegexCaptureDecorHints(text);
       const cursorHead = view.hasFocus ? view.state.selection.main.head : -1;
-      const activePair = findNearestActiveBracketPair(text, cursorHead);
+      const activePair = findNearestActiveBracketPair(hl.bracketPairs, cursorHead);
       const activeBracketOffsets = activePair ? new Set<number>([activePair.openOffset, activePair.closeOffset]) : new Set<number>();
       const activeInnerRange = activePair ? { from: activePair.openOffset, to: activePair.closeOffset + 1 } : undefined;
       const pendingDecos: { from: number; to: number; deco: Decoration }[] = [];
@@ -283,52 +320,26 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
         );
       }
 
-      let offset = 0;
-      for (const tok of tokens) {
-        const len = tok.value.length;
-        if (len <= 0) continue;
-        const from = offset;
-        const to = offset + len;
-        offset = to;
-        if (tok.type === 'text') continue;
-        if (tok.type === 'group') {
-          for (let i = 0; i < tok.value.length; i += 1) {
-            const ch = tok.value[i];
-            if (ch !== '(' && ch !== ')') continue;
-            const charFrom = from + i;
-            const charTo = charFrom + 1;
-            const meta = bracketMetaByOffset.get(charFrom);
-            if (!meta) continue;
-            const skipBaseForNamedOpen = ch === '(' && decorHints.namedGroupHeaderRanges.some((h) => h.from === charFrom);
-            if (!skipBaseForNamedOpen) {
-              pushMark(charFrom, charTo, classForBracketDepth(meta.kind, meta.depth));
-            }
-            if (activeBracketOffsets.has(charFrom)) pushMark(charFrom, charTo, 'rrRegexTok rrRegexTok--pair-active');
-          }
-          continue;
-        }
-        if (tok.type === 'class' || tok.type === 'quant') {
-          if (!tokenFullyInsideNamedHeader(from, to)) {
-            pushMark(from, to, classForToken(tok.type));
-          }
-          for (let i = 0; i < tok.value.length; i += 1) {
-            const ch = tok.value[i];
-            if (ch !== '[' && ch !== ']' && ch !== '{' && ch !== '}') continue;
-            const charFrom = from + i;
-            const meta = bracketMetaByOffset.get(charFrom);
-            if (meta) {
-              pushMark(charFrom, charFrom + 1, classForBracketDepth(meta.kind, meta.depth));
-            }
-            if (!activeBracketOffsets.has(charFrom)) continue;
-            pushMark(charFrom, charFrom + 1, 'rrRegexTok rrRegexTok--pair-active');
-          }
-          continue;
-        }
+      for (const span of hl.semanticSpans) {
+        const { from, to } = span;
         if (!tokenFullyInsideNamedHeader(from, to)) {
-          pushMark(from, to, classForToken(tok.type));
+          pushMark(from, to, classForSemanticKind(span.kind));
         }
       }
-      const diagnostics = collectRegexExpressionDiagnostics(text, regexFlags, uiLanguage);
+
+      for (let o = 0; o < text.length; o += 1) {
+        const ch = text[o];
+        if (ch !== '(' && ch !== ')' && ch !== '[' && ch !== ']' && ch !== '{' && ch !== '}') continue;
+        const meta = bracketMetaByOffset.get(o);
+        if (!meta) continue;
+        const skipBaseForNamedOpen =
+          ch === '(' && decorHints.namedGroupHeaderRanges.some((h) => h.from === o);
+        if (!skipBaseForNamedOpen) {
+          pushMark(o, o + 1, classForBracketDepth(meta.kind, meta.depth));
+        }
+        if (activeBracketOffsets.has(o)) pushMark(o, o + 1, 'rrRegexTok rrRegexTok--pair-active');
+      }
+      const diagnostics = collectRegexExpressionDiagnostics(text, regexFlags, uiLanguage, parseResult);
       for (const d of diagnostics) {
         pushMark(
           d.from,
@@ -349,18 +360,17 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     }
 
     /**
-     * 根据 token 类型返回用于样式的 className。
+     * 根据语义 kind 返回用于样式的 className。
      *
-     * @param type token 类型。
+     * @param kind 语义类别。
      * @returns className。
      */
-    function classForToken(type: RegexTokenType): string {
-      if (type === 'escape') return 'rrRegexTok rrRegexTok--escape';
-      if (type === 'class') return 'rrRegexTok rrRegexTok--class';
-      if (type === 'group') return 'rrRegexTok rrRegexTok--group';
-      if (type === 'quant') return 'rrRegexTok rrRegexTok--quant';
-      if (type === 'alt') return 'rrRegexTok rrRegexTok--alt';
-      if (type === 'anchor') return 'rrRegexTok rrRegexTok--anchor';
+    function classForSemanticKind(kind: RegexSemanticKind): string {
+      if (kind === 'escape') return 'rrRegexTok rrRegexTok--escape';
+      if (kind === 'class') return 'rrRegexTok rrRegexTok--class';
+      if (kind === 'quant') return 'rrRegexTok rrRegexTok--quant';
+      if (kind === 'alt') return 'rrRegexTok rrRegexTok--alt';
+      if (kind === 'anchor') return 'rrRegexTok rrRegexTok--anchor';
       return 'rrRegexTok rrRegexTok--dot';
     }
 
@@ -395,10 +405,9 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
      * @returns 最近层级的括号对；若未命中则返回 undefined。
      */
     function findNearestActiveBracketPair(
-      text: string,
+      pairs: readonly RegexBracketPair[],
       cursorOffset: number,
     ): { openOffset: number; closeOffset: number; depth: number; kind: 'round' | 'square' | 'curly' } | undefined {
-      const pairs = collectBracketPairs(text);
       let nearest: { openOffset: number; closeOffset: number; depth: number; kind: 'round' | 'square' | 'curly' } | undefined;
       for (const pair of pairs) {
         if (!(pair.openOffset < cursorOffset && cursorOffset <= pair.closeOffset)) continue;
@@ -410,14 +419,13 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     }
 
     /**
-     * 构建括号偏移到层级的映射，用于按层级上色。
+     * 由括号对列表构建偏移到层级的映射，用于按层级上色。
      *
-     * @param text 正则文本。
-     * @returns key 为括号偏移、value 为层级的映射。
+     * @param pairs `collectBracketPairs` / 高亮模型的括号对列表。
+     * @returns key 为括号偏移、value 为种类与深度。
      */
-    function collectBracketMetaByOffset(text: string): Map<number, { kind: 'round' | 'square' | 'curly'; depth: number }> {
+    function collectBracketMetaFromPairs(pairs: readonly RegexBracketPair[]): Map<number, { kind: 'round' | 'square' | 'curly'; depth: number }> {
       const out = new Map<number, { kind: 'round' | 'square' | 'curly'; depth: number }>();
-      const pairs = collectBracketPairs(text);
       for (const pair of pairs) {
         out.set(pair.openOffset, { kind: pair.kind, depth: pair.depth });
         out.set(pair.closeOffset, { kind: pair.kind, depth: pair.depth });
@@ -449,7 +457,12 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     function createDiagnosticsHoverTooltip() {
       return hoverTooltip((view, pos): Tooltip | null => {
         const text = view.state.doc.toString();
-        const diagnostics = collectRegexExpressionDiagnostics(text, regexFlags, uiLanguage);
+        const cached = regexParseCacheRef.current;
+        const parseForLint =
+          cached && cached.text === text && cached.flags === regexFlags
+            ? cached.result
+            : parseRegExpPattern(text, regexFlags);
+        const diagnostics = collectRegexExpressionDiagnostics(text, regexFlags, uiLanguage, parseForLint);
         const hit = pickDiagnosticAtPosition(diagnostics, pos);
         if (!hit) return null;
         return {
@@ -469,6 +482,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     return [
       tooltips({ parent: document.body }),
       history(),
+      singleLineEnterGuard,
       keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
       ph ? placeholder(ph) : [],
       EditorView.lineWrapping,

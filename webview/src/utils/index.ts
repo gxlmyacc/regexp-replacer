@@ -1,6 +1,7 @@
 import type { ReplaceCommand, ReplaceRule } from '../../../src/types';
 import type { LanguageCode } from '../i18n';
 import { countCapturingGroups } from './regexLint/countCapturingGroups';
+import { lexRegexPatternTokens } from './regexHighlight/lexer';
 
 export type RegexTokenType =
   | 'text'
@@ -256,92 +257,14 @@ export function autoResizeTextarea(el: HTMLTextAreaElement): void {
 }
 
 /**
- * 把正则表达式（不含 / /）分词为便于高亮的 token 列表（轻量实现）。
+ * 把正则表达式（不含 / /）分词为便于高亮的 token 列表（flags 感知 lexer）。
  *
  * @param pattern 正则表达式字符串。
+ * @param flags 可选 `new RegExp` flags（默认空串）。
  * @returns token 列表。
  */
-export function tokenizeRegexPattern(pattern: string): RegexToken[] {
-  const tokens: RegexToken[] = [];
-  let i = 0;
-
-  const push = (type: RegexTokenType, value: string) => {
-    if (!value) return;
-    const last = tokens[tokens.length - 1];
-    if (last && last.type === type) last.value += value;
-    else tokens.push({ type, value });
-  };
-
-  while (i < pattern.length) {
-    const ch = pattern[i];
-
-    if (ch === '\\') {
-      const next = pattern[i + 1];
-      push('escape', next ? `\\${next}` : '\\');
-      i += next ? 2 : 1;
-      continue;
-    }
-
-    if (ch === '[') {
-      let j = i + 1;
-      let buf = '[';
-      while (j < pattern.length) {
-        const c = pattern[j];
-        buf += c;
-        if (c === '\\') {
-          const n = pattern[j + 1];
-          if (n) {
-            buf += n;
-            j += 2;
-            continue;
-          }
-        }
-        if (c === ']') {
-          j += 1;
-          break;
-        }
-        j += 1;
-      }
-      push('class', buf);
-      i = j;
-      continue;
-    }
-
-    if (ch === '(' || ch === ')') {
-      push('group', ch);
-      i += 1;
-      continue;
-    }
-
-    if (ch === '*' || ch === '+' || ch === '?' || ch === '{' || ch === '}') {
-      push('quant', ch);
-      i += 1;
-      continue;
-    }
-
-    if (ch === '|') {
-      push('alt', ch);
-      i += 1;
-      continue;
-    }
-
-    if (ch === '^' || ch === '$') {
-      push('anchor', ch);
-      i += 1;
-      continue;
-    }
-
-    if (ch === '.') {
-      push('dot', ch);
-      i += 1;
-      continue;
-    }
-
-    push('text', ch);
-    i += 1;
-  }
-
-  return tokens;
+export function tokenizeRegexPattern(pattern: string, flags = ''): RegexToken[] {
+  return lexRegexPatternTokens(pattern, flags) as RegexToken[];
 }
 
 /**

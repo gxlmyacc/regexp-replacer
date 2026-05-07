@@ -1,5 +1,5 @@
 import type { LanguageCode } from '../../i18n';
-import { parseRegExpPattern } from './parseRegExpPattern';
+import { parseRegExpPattern, type ParseRegExpPatternResult } from './parseRegExpPattern';
 import type { RegexExpressionDiagnostic, RegexLintContext, RegexLintRule } from './types';
 import { bracketRule } from './rules/bracketRule';
 import { engineSyntaxRule } from './rules/engineSyntaxRule';
@@ -41,16 +41,18 @@ function rangesOverlap(a: number, b: number, c: number, d: number): boolean {
  * @param text 正则 pattern 源码。
  * @param flags 与 `new RegExp(text, flags)` 一致的 flags。
  * @param language UI 语言。
+ * @param parseResult 可选预解析结果（与外部已执行的 `parseRegExpPattern` 复用以避免重复解析）。
  * @returns 顺序为 error → warning → suggestion。
  */
 export function collectRegexExpressionDiagnostics(
   text: string,
   flags: string,
   language: LanguageCode,
+  parseResult?: ParseRegExpPatternResult,
 ): RegexExpressionDiagnostic[] {
-  const parseResult = parseRegExpPattern(text, flags);
-  const parsedPattern = parseResult.ok ? parseResult.pattern : undefined;
-  const parseError = parseResult.ok ? undefined : parseResult.error;
+  const parseResultResolved = parseResult ?? parseRegExpPattern(text, flags);
+  const parsedPattern = parseResultResolved.ok ? parseResultResolved.pattern : undefined;
+  const parseError = parseResultResolved.ok ? undefined : parseResultResolved.error;
 
   const ctx: RegexLintContext = {
     text,

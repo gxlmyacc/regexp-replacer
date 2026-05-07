@@ -519,7 +519,7 @@ export function App(): React.ReactElement {
     if (!selectedRule || selectedRule.engine !== 'regex') return undefined;
     const pattern = selectedRule.find ?? '';
     const flags = selectedRule.flags ?? 'g';
-    return { pattern, flags, tokens: tokenizeRegexPattern(pattern) };
+    return { pattern, flags, tokens: tokenizeRegexPattern(pattern, flags) };
   }, [selectedRule]);
 
   /**
@@ -1611,7 +1611,12 @@ export function App(): React.ReactElement {
                     />
                   </div>
                 ) : (
-                  <ExplainTabContent className={toolsPreviewFillClassName} engine={selectedRuleEngine} />
+                  <ExplainTabContent
+                    className={toolsPreviewFillClassName}
+                    engine={selectedRuleEngine}
+                    regexPattern={selectedRuleEngine === 'regex' ? (selectedRule?.find ?? '') : undefined}
+                    regexFlags={selectedRuleEngine === 'regex' ? (selectedRule?.flags ?? 'g') : undefined}
+                  />
                 )}
               </div>
             </div>
