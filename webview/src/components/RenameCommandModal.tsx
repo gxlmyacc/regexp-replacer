@@ -42,7 +42,8 @@ export const RenameCommandModal = React.forwardRef<RenameCommandModalRef>(functi
         setErrorText(undefined);
         return nextData;
       },
-      afterModalClose() {
+      // use-modal-ref 事件名为 afterCloseModal；误写 afterModalClose 时不会执行清理。
+      afterCloseModal() {
         setValue('');
         setErrorText(undefined);
       },

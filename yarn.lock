@@ -5776,10 +5776,10 @@ url-join@^4.0.1:
   resolved "https://registry.npmjs.org/url-join/-/url-join-4.0.1.tgz"
   integrity sha512-jk1+QP6ZJqyOiuEI9AEWQfju/nB2Pw466kbA0LEZljHwKeMgd9WrAEgEGxjPDD2+TNbbb37rTyhEfrCXfuKXnA==
 
-use-modal-ref@^0.1.6-alpha.2:
-  version "0.1.6-alpha.2"
-  resolved "https://registry.npmjs.org/use-modal-ref/-/use-modal-ref-0.1.6-alpha.2.tgz"
-  integrity sha512-7k0Gl78bYeSPvOkwX5VDouizvqrgfouETHZyz5T4FAc8YS8hDuS2sWOX+aJNyylWFdFW2/kASXqu+204gRIT0A==
+use-modal-ref@^0.1.6-alpha.3:
+  version "0.1.6-alpha.3"
+  resolved "https://registry.npmjs.org/use-modal-ref/-/use-modal-ref-0.1.6-alpha.3.tgz#8787a0fb91d4532456e4893ed3a8d0d794b54672"
+  integrity sha512-XF3XhPhffI4GO20yPXb1OZMk1zDrXdhLpqxPv8ZtwWr4MVfgJ3reTKWuOcxdg6jnQ2BI6m/JuUVsz6viXbXYnA==
   dependencies:
     "@babel/runtime" "^7.12.5"
 

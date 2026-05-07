@@ -202,7 +202,8 @@ export function App(): React.ReactElement {
       );
       if (!isMountedRef.current) return;
       commitRenameAndContinueSave(cmdId, nextName, continueSave);
-    } catch {
+    } catch (ex) {
+      console.error(ex);
       // cancel
     }
   }

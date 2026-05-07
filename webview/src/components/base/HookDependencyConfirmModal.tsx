@@ -59,18 +59,21 @@ export const HookDependencyConfirmModal = forwardRef<HookDependencyConfirmModalR
   _props,
   ref,
 ): React.ReactElement | null {
-  const { modal, data } = useModalRef<HookDependencyConfirmModalData, HookDependencyConfirmModalResult>(ref, {
-    title: '',
-    intro: '',
-    referrerBlocks: [],
-    referrerRows: [],
-    referrerRowCheckboxAria: '',
-    cancelText: '取消',
-    okText: '确定',
-    danger: true,
-    showRemoveFromOthersCheckbox: false,
-    removeFromOthersLabel: '',
-  });
+  const { modal, data } = useModalRef<HookDependencyConfirmModalData, HookDependencyConfirmModalResult>(
+    ref,
+    {
+      title: '',
+      intro: '',
+      referrerBlocks: [],
+      referrerRows: [],
+      referrerRowCheckboxAria: '',
+      cancelText: '取消',
+      okText: '确定',
+      danger: true,
+      showRemoveFromOthersCheckbox: false,
+      removeFromOthersLabel: '',
+    },
+  );
 
   const [removeFromOthers, setRemoveFromOthers] = useState(false);
   const [rowChecked, setRowChecked] = useState<Record<string, boolean>>({});
@@ -162,8 +165,8 @@ export const HookDependencyConfirmModal = forwardRef<HookDependencyConfirmModalR
               ))}
             </ul>
           </div>
-        ) : data.referrerBlocks.length ? (
-          <div className="rrHookDepConfirm__listWrap">
+        ) : data.referrerBlocks?.length ? (
+            <div className="rrHookDepConfirm__listWrap">
             <ul className="rrHookDepConfirm__blocks">
               {data.referrerBlocks.map((b) => (
                 <li key={b.commandId} className="rrHookDepConfirm__block">

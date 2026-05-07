@@ -27,13 +27,16 @@ export type ConfirmModalRef = ModalRef<'modal', ConfirmModalData, ConfirmModalRe
  * @returns React 元素或 null。
  */
 export const ConfirmModal = React.forwardRef<ConfirmModalRef>(function ConfirmModal(_props, ref): React.ReactElement | null {
-  const { modal, data } = useModalRef<ConfirmModalData, ConfirmModalResult>(ref, {
-    title: '',
-    content: '',
-    cancelText: '取消',
-    okText: '确定',
-    danger: true,
-  });
+  const { modal, data } = useModalRef<ConfirmModalData, ConfirmModalResult>(
+    ref,
+    {
+      title: '',
+      content: '',
+      cancelText: '取消',
+      okText: '确定',
+      danger: true,
+    }
+  );
 
   const onCancel = () => void modal.cancelModal();
   const onOk = () => void modal.endModal(true);
