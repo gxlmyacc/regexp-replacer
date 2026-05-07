@@ -51,4 +51,27 @@ describe('regexCaptureGroupScan', () => {
   test('hasAnyCapturingGroup：(?:x) 为 false', () => {
     expect(hasAnyCapturingGroup('(?:x)')).toBe(false);
   });
+
+  test('(?:)(?=a)(?!b)：非捕获与前瞻断言不计捕获', () => {
+    expect(collectCapturingGroupOpenOffsets('(?:)(?=a)(?!b)')).toEqual([]);
+  });
+
+  test('(?<=a)(?<!b)(z)：后顾断言跳过，普通捕获仍编号', () => {
+    expect(collectCapturingGroupOpenOffsets('(?<=a)(?<!b)(z)')).toEqual([{ openOffset: 12, index: 1 }]);
+  });
+
+  test('(?< 缺少 > 时仍记录捕获开括号（退化扫描）', () => {
+    expect(collectCapturingGroupOpenOffsets('(?<)')).toEqual([{ openOffset: 0, index: 1 }]);
+  });
+
+  test("(?' 缺少闭合引号时仍记录捕获开括号", () => {
+    expect(collectCapturingGroupOpenOffsets("(?'")).toEqual([{ openOffset: 0, index: 1 }]);
+  });
+
+  test('(?<>)：空组名不写 namedGroupNameRanges，仍有 header', () => {
+    const r = scanRegexCaptureDecorHints('(?<>)');
+    expect(r.namedGroupNameRanges).toEqual([]);
+    expect(r.namedGroupHeaderRanges).toEqual([{ from: 0, to: 4 }]);
+    expect(r.capturingOpens).toEqual([{ openOffset: 0, index: 1 }]);
+  });
 });

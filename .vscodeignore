@@ -28,6 +28,7 @@ test/**
 
 # 覆盖率 HTML 报告（vitest --coverage 等生成；勿打入 VSIX）
 coverage/**
+coverage-out/**
 
 # 仓库元数据（扩展运行时不需要）
 .gitignore

@@ -1,10 +1,11 @@
 import path from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { repoIconFaviconPlugin } from './viteRepoIconFaviconPlugin';
 
 export default defineConfig({
   root: __dirname,
-  plugins: [react()],
+  plugins: [react(), repoIconFaviconPlugin()],
   resolve: {
     // 避免 webview/node_modules 与根目录 node_modules 同时存在 react 导致 “Invalid hook call”
     dedupe: ['react', 'react-dom'],

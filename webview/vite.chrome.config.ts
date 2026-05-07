@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { repoIconFaviconPlugin } from './viteRepoIconFaviconPlugin';
 
 /**
  * Chrome 扩展 UI 的 Vite 构建配置。
@@ -12,7 +13,7 @@ import react from '@vitejs/plugin-react';
  */
 export default defineConfig({
   root: __dirname,
-  plugins: [react()],
+  plugins: [react(), repoIconFaviconPlugin()],
   base: './',
   resolve: {
     // 避免多个 React 实例导致 Invalid hook call

@@ -10,3 +10,4 @@ dist-webview
 /coverage
 /chrome-extension/ui
 /chrome-extension/pem
+/coverage-out
