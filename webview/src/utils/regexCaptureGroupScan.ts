@@ -12,11 +12,19 @@ export type RegexNamedGroupNameRange = {
   to: number;
 };
 
+/** 命名捕获组前缀 `(?<name>` / `(?'name'` 的半开区间 [from,to)，含至组名结束定界符之后首字符前；与圆括号同色加粗。 */
+export type RegexNamedGroupHeaderRange = {
+  from: number;
+  to: number;
+};
+
 export type RegexCaptureDecorScanResult = {
   /** 所有计入编号的捕获组开括号位置。 */
   capturingOpens: RegexCapturingGroupOpen[];
   /** 命名捕获组组名字符区间列表。 */
   namedGroupNameRanges: RegexNamedGroupNameRange[];
+  /** 命名捕获组整段前缀区间，供编辑器与圆括号统一着色。 */
+  namedGroupHeaderRanges: RegexNamedGroupHeaderRange[];
 };
 
 /**
@@ -73,12 +81,13 @@ function skipGroupCommentEnd(s: string, iCommentBody: number): number {
  * 输出捕获组开括号编号及命名捕获组组名区间（用于编辑器装饰，不要求源码一定能通过 `new RegExp`）。
  *
  * @param pattern 正则源码（单行字符串）。
- * @returns 捕获开括号列表与命名组名区间列表。
+ * @returns 捕获开括号列表、命名组名区间及命名组前缀区间。
  */
 export function scanRegexCaptureDecorHints(pattern: string): RegexCaptureDecorScanResult {
   const s = String(pattern ?? '');
   const capturingOpens: RegexCapturingGroupOpen[] = [];
   const namedGroupNameRanges: RegexNamedGroupNameRange[] = [];
+  const namedGroupHeaderRanges: RegexNamedGroupHeaderRange[] = [];
   let captureCount = 0;
 
   let i = 0;
@@ -140,6 +149,7 @@ export function scanRegexCaptureDecorHints(pattern: string): RegexCaptureDecorSc
         if (gt !== -1) {
           captureCount += 1;
           capturingOpens.push({ openOffset: i, index: captureCount });
+          namedGroupHeaderRanges.push({ from: i, to: gt + 1 });
           if (gt > nameStart) {
             namedGroupNameRanges.push({ from: nameStart, to: gt });
           }
@@ -157,6 +167,7 @@ export function scanRegexCaptureDecorHints(pattern: string): RegexCaptureDecorSc
         if (q !== -1) {
           captureCount += 1;
           capturingOpens.push({ openOffset: i, index: captureCount });
+          namedGroupHeaderRanges.push({ from: i, to: q + 1 });
           if (q > nameStart) {
             namedGroupNameRanges.push({ from: nameStart, to: q });
           }
@@ -177,7 +188,7 @@ export function scanRegexCaptureDecorHints(pattern: string): RegexCaptureDecorSc
     i += 1;
   }
 
-  return { capturingOpens, namedGroupNameRanges };
+  return { capturingOpens, namedGroupNameRanges, namedGroupHeaderRanges };
 }
 
 /**

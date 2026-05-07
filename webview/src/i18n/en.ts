@@ -149,5 +149,26 @@ export const en = {
   explainDollarBacktick: '- $`: text before match',
   explainDollarQuote: "- $': text after match",
   explainDollarDollar: '- $$: literal $',
+
+  /** RegExp 语法错误（无引擎详情时的统称）。 */
+  regexSyntaxErrorGeneric: 'Regex syntax error',
+  /** RegExp 语法错误：带引擎归一化详情；{detail} 为短说明或原始 message。 */
+  regexSyntaxErrorFmt: 'Regex syntax error: {detail}',
+  regexSyntaxDetailUnterminatedCharacterClass: 'Unterminated character class (missing ])',
+  regexSyntaxDetailUnterminatedGroup: 'Unterminated group (missing ))',
+  regexSyntaxDetailNothingToRepeat: 'Nothing to repeat',
+  regexSyntaxDetailInvalidFlags: 'Invalid regular expression flags',
+  regexSyntaxDetailInvalidGroup: 'Invalid group',
+  regexSyntaxDetailInvalidEscape: 'Invalid escape',
+  regexSyntaxDetailUnmatched: 'Unmatched delimiter',
+  /** 不必要转义警告（表达式编辑器波浪线 tooltip）。 */
+  regexRedundantEscapeWarning: 'Redundant escape; this character does not need a backslash.',
+
+  /** 括号诊断：多余的闭括号；{ch} 为字符本身。 */
+  regexBracketUnmatchedClose: 'Unmatched closing bracket {ch}',
+  /** 括号诊断：类型交叉；{expected} / {actual} 为字符。 */
+  regexBracketMismatch: 'Bracket mismatch: expected {expected}, got {actual}',
+  /** 括号诊断：未闭合的开括号；{ch} 为 (、[ 或 {。 */
+  regexBracketUnmatchedOpen: 'Unmatched opening bracket {ch}',
 };
 

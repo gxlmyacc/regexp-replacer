@@ -17,6 +17,7 @@ describe('regexCaptureGroupScan', () => {
     const r = scanRegexCaptureDecorHints(s);
     expect(r.capturingOpens).toEqual([{ openOffset: 0, index: 1 }]);
     expect(r.namedGroupNameRanges).toEqual([{ from: 3, to: 4 }]);
+    expect(r.namedGroupHeaderRanges).toEqual([{ from: 0, to: 5 }]);
   });
 
   test("(?'foo'x)：1 个捕获，组名区间 foo", () => {
@@ -24,6 +25,7 @@ describe('regexCaptureGroupScan', () => {
     const r = scanRegexCaptureDecorHints(s);
     expect(r.capturingOpens).toEqual([{ openOffset: 0, index: 1 }]);
     expect(r.namedGroupNameRanges).toEqual([{ from: 3, to: 6 }]);
+    expect(r.namedGroupHeaderRanges).toEqual([{ from: 0, to: 7 }]);
   });
 
   test('(?<=x)(y)：lookbehind 不计捕获，仅第二个 ( 为捕获 1', () => {

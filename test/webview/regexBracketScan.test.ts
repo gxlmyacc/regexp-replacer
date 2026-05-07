@@ -27,53 +27,62 @@ describe('hasUnescapedCloseBracketAfter', () => {
 
 describe('collectBracketDiagnostics', () => {
   test('[] 与 [^] 不应报括号未匹配（空字符类合法闭合）', () => {
-    expect(collectBracketDiagnostics('[]')).toEqual([]);
-    expect(collectBracketDiagnostics('[^]')).toEqual([]);
+    expect(collectBracketDiagnostics('[]', 'zh-CN')).toEqual([]);
+    expect(collectBracketDiagnostics('[^]', 'zh-CN')).toEqual([]);
   });
 
   test('[]]、[^]]：首槽字面量 ]，由后续 ] 闭合字符类', () => {
-    expect(collectBracketDiagnostics('[]]')).toEqual([]);
-    expect(collectBracketDiagnostics('[^]]')).toEqual([]);
+    expect(collectBracketDiagnostics('[]]', 'zh-CN')).toEqual([]);
+    expect(collectBracketDiagnostics('[^]]', 'zh-CN')).toEqual([]);
   });
 
-  test('未闭合 [ 报未匹配左括号', () => {
-    expect(collectBracketDiagnostics('[')).toMatchObject([
+  test('未闭合 [ 报未匹配左括号（zh-CN）', () => {
+    expect(collectBracketDiagnostics('[', 'zh-CN')).toMatchObject([
       { from: 0, to: 1, message: '未匹配的左括号 [' },
     ]);
   });
 
-  test('多余右括号', () => {
-    expect(collectBracketDiagnostics(')')).toMatchObject([
+  test('多余右括号（zh-CN）', () => {
+    expect(collectBracketDiagnostics(')', 'zh-CN')).toMatchObject([
       { from: 0, to: 1, message: '未匹配的右括号 )' },
     ]);
-    expect(collectBracketDiagnostics('a)')).toMatchObject([
+    expect(collectBracketDiagnostics('a)', 'zh-CN')).toMatchObject([
       { from: 1, to: 2, message: '未匹配的右括号 )' },
     ]);
   });
 
-  test('圆括号与方括号交叉不匹配', () => {
-    expect(collectBracketDiagnostics('(')).toMatchObject([
+  test('圆括号与方括号交叉不匹配（zh-CN）', () => {
+    expect(collectBracketDiagnostics('(', 'zh-CN')).toMatchObject([
       { from: 0, to: 1, message: '未匹配的左括号 (' },
     ]);
-    expect(collectBracketDiagnostics('(]')).toEqual([
+    expect(collectBracketDiagnostics('(]', 'zh-CN')).toEqual([
       expect.objectContaining({ message: expect.stringContaining('括号不匹配') }),
     ]);
   });
 
   test('字符类内的圆括号不参与栈匹配', () => {
-    expect(collectBracketDiagnostics('[()]')).toEqual([]);
+    expect(collectBracketDiagnostics('[()]', 'zh-CN')).toEqual([]);
   });
 
   test('[) 仅余未闭合字符类（) 在类内视为字面量）', () => {
-    expect(collectBracketDiagnostics('[)')).toMatchObject([
+    expect(collectBracketDiagnostics('[)', 'zh-CN')).toMatchObject([
       { from: 0, to: 1, message: '未匹配的左括号 [' },
     ]);
   });
 
   test('花括号配对', () => {
-    expect(collectBracketDiagnostics('{1,2}')).toEqual([]);
-    expect(collectBracketDiagnostics('{')).toMatchObject([
+    expect(collectBracketDiagnostics('{1,2}', 'zh-CN')).toEqual([]);
+    expect(collectBracketDiagnostics('{', 'zh-CN')).toMatchObject([
       { from: 0, to: 1, message: '未匹配的左括号 {' },
+    ]);
+  });
+
+  test('英文文案（en）', () => {
+    expect(collectBracketDiagnostics(')', 'en')).toMatchObject([
+      { from: 0, to: 1, message: 'Unmatched closing bracket )' },
+    ]);
+    expect(collectBracketDiagnostics('[', 'en')).toMatchObject([
+      { from: 0, to: 1, message: 'Unmatched opening bracket [' },
     ]);
   });
 });

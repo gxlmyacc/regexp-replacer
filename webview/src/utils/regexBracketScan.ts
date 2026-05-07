@@ -1,3 +1,5 @@
+import { getDict, type LanguageCode } from '../i18n';
+
 export type RegexBracketPair = {
   openOffset: number;
   closeOffset: number;
@@ -10,6 +12,18 @@ export type RegexBracketDiagnostic = {
   to: number;
   message: string;
 };
+
+/**
+ * 由开括号推导应与之配对的闭括号字符。
+ *
+ * @param open 开括号 `(`、`[` 或 `{`。
+ * @returns 对应的闭括号字符。
+ */
+function closingCharForOpen(open: '(' | '[' | '{'): ')' | ']' | '}' {
+  if (open === '(') return ')';
+  if (open === '[') return ']';
+  return '}';
+}
 
 /**
  * 判断从某下标起是否存在未转义的 `]`（用于区分 `[]`/`[^]` 与首字符为字面量 `]` 的字符类）。
@@ -126,9 +140,11 @@ export function collectBracketPairs(text: string): RegexBracketPair[] {
  * 收集括号配对诊断（支持 ()、[]、{}；字符类内不参与栈匹配；忽略转义）。
  *
  * @param text 正则文本。
- * @returns 诊断列表（范围 + 中文提示）。
+ * @param language 界面语言（文案走 i18n）。
+ * @returns 诊断列表（范围 + 本地化提示）。
  */
-export function collectBracketDiagnostics(text: string): RegexBracketDiagnostic[] {
+export function collectBracketDiagnostics(text: string, language: LanguageCode): RegexBracketDiagnostic[] {
+  const t = getDict(language);
   const out: RegexBracketDiagnostic[] = [];
   const stack: { ch: '(' | '[' | '{'; offset: number }[] = [];
   const closeToOpen: Record<string, '(' | '[' | '{'> = { ')': '(', ']': '[', '}': '{' };
@@ -178,14 +194,19 @@ export function collectBracketDiagnostics(text: string): RegexBracketDiagnostic[
       const expected = closeToOpen[ch];
       const top = stack[stack.length - 1];
       if (!top) {
-        out.push({ from: i, to: i + 1, message: `未匹配的右括号 ${ch}` });
-        continue;
-      }
-      if (top.ch !== expected) {
         out.push({
           from: i,
           to: i + 1,
-          message: `括号不匹配：期望 ${top.ch === '(' ? ')' : top.ch === '[' ? ']' : '}'}，实际为 ${ch}`,
+          message: t.regexBracketUnmatchedClose.replace('{ch}', ch),
+        });
+        continue;
+      }
+      if (top.ch !== expected) {
+        const expectedClose = closingCharForOpen(top.ch);
+        out.push({
+          from: i,
+          to: i + 1,
+          message: t.regexBracketMismatch.replace('{expected}', expectedClose).replace('{actual}', ch),
         });
         stack.pop();
         continue;
@@ -197,7 +218,7 @@ export function collectBracketDiagnostics(text: string): RegexBracketDiagnostic[
     out.push({
       from: item.offset,
       to: item.offset + 1,
-      message: `未匹配的左括号 ${item.ch}`,
+      message: t.regexBracketUnmatchedOpen.replace('{ch}', item.ch),
     });
   }
   return out;

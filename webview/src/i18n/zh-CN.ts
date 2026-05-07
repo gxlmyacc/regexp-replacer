@@ -155,5 +155,26 @@ export const zhCN = {
   explainDollarBacktick: '- $`：匹配前文本',
   explainDollarQuote: "- $'：匹配后文本",
   explainDollarDollar: '- $$：字面量 $',
+
+  /** RegExp 语法错误（无引擎详情时的统称）。 */
+  regexSyntaxErrorGeneric: '正则语法错误',
+  /** RegExp 语法错误：带引擎归一化详情；{detail} 为短说明或原始 message。 */
+  regexSyntaxErrorFmt: '正则语法错误：{detail}',
+  regexSyntaxDetailUnterminatedCharacterClass: '字符类未闭合（缺少 ]）',
+  regexSyntaxDetailUnterminatedGroup: '分组未闭合（缺少 )）',
+  regexSyntaxDetailNothingToRepeat: '量词前缺少可重复目标',
+  regexSyntaxDetailInvalidFlags: '正则标志无效',
+  regexSyntaxDetailInvalidGroup: '分组语法无效',
+  regexSyntaxDetailInvalidEscape: '转义序列无效',
+  regexSyntaxDetailUnmatched: '存在未匹配的括号或分隔符',
+  /** 不必要转义警告（表达式编辑器波浪线 tooltip）。 */
+  regexRedundantEscapeWarning: '此处转义多余，可直接使用该字符',
+
+  /** 括号诊断：多余的闭括号；{ch} 为字符本身。 */
+  regexBracketUnmatchedClose: '未匹配的右括号 {ch}',
+  /** 括号诊断：类型交叉；{expected} / {actual} 为字符。 */
+  regexBracketMismatch: '括号不匹配：期望 {expected}，实际为 {actual}',
+  /** 括号诊断：未闭合的开括号；{ch} 为 (、[ 或 {。 */
+  regexBracketUnmatchedOpen: '未匹配的左括号 {ch}',
 };
 

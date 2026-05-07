@@ -34,15 +34,15 @@ function unmount(host: HTMLDivElement): void {
 
 describe('RegexExpressionEditor', () => {
   /**
-   * 统计编辑器内容区内错误装饰节点数量。
+   * 统计编辑器内容区内错误级诊断波浪线节点数量。
    *
    * @param host 挂载容器。
-   * @returns 含 rrRegexTok--error 的节点数。
+   * @returns 同时含 diagnostic-underline 与 severity-error 的节点数。
    */
   function countRegexErrorMarks(host: HTMLElement): number {
     const root = host.querySelector('.cm-content');
     if (!root) return 0;
-    return root.querySelectorAll('.rrRegexTok--error').length;
+    return root.querySelectorAll('.rrRegexTok--diagnostic-underline.rrRegexTok--severity-error').length;
   }
 
   test('[]、[ ^ ] 不产生括号未匹配装饰（与 regexBracketScan 一致）', () => {
@@ -83,6 +83,34 @@ describe('RegexExpressionEditor', () => {
       const inlay = host.querySelector('.cm-content .rrRegexCaptureInlay');
       expect(inlay).not.toBeNull();
       expect(inlay?.textContent).toBe('1');
+    } finally {
+      unmount(host);
+    }
+  });
+
+  test('不必要转义显示警告波浪线（severity-warning）', () => {
+    const host = mount(
+      <I18nProvider>
+        <RegexExpressionEditor value={'\\a'} uiLanguage="zh-CN" onChange={() => {}} onAfterChange={() => {}} />
+      </I18nProvider>,
+    );
+    try {
+      expect(
+        host.querySelectorAll('.cm-content .rrRegexTok--diagnostic-underline.rrRegexTok--severity-warning').length,
+      ).toBeGreaterThan(0);
+    } finally {
+      unmount(host);
+    }
+  });
+
+  test('命名捕获组前缀带 .rrRegexTok--named-group-header，与圆括号同色', () => {
+    const host = mount(
+      <I18nProvider>
+        <RegexExpressionEditor value="(?<year>)" uiLanguage="zh-CN" onChange={() => {}} onAfterChange={() => {}} />
+      </I18nProvider>,
+    );
+    try {
+      expect(host.querySelectorAll('.cm-content .rrRegexTok--named-group-header').length).toBeGreaterThan(0);
     } finally {
       unmount(host);
     }

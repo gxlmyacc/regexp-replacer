@@ -14,7 +14,8 @@ import {
 import { Compartment, EditorState, RangeSetBuilder } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { tokenizeRegexPattern, type RegexTokenType } from '../utils';
-import { collectBracketDiagnostics, collectBracketPairs } from '../utils/regexBracketScan';
+import { collectBracketPairs } from '../utils/regexBracketScan';
+import { collectRegexExpressionDiagnostics, pickDiagnosticAtPosition } from '../utils/regexExpressionDiagnostics';
 import { scanRegexCaptureDecorHints } from '../utils/regexCaptureGroupScan';
 import type { LanguageCode } from '../i18n';
 import './RegexExpressionEditor.scss';
@@ -168,7 +169,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
           this.decorations = buildRegexTokenDecorations(view);
         }
         update(update: ViewUpdate) {
-          if (update.docChanged || update.viewportChanged || update.selectionSet) {
+          if (update.docChanged || update.viewportChanged || update.selectionSet || update.focusChanged) {
             this.decorations = buildRegexTokenDecorations(update.view);
           }
           if (update.selectionSet) {
@@ -204,7 +205,9 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       const builder = new RangeSetBuilder<Decoration>();
       const bracketMetaByOffset = collectBracketMetaByOffset(text);
       const decorHints = scanRegexCaptureDecorHints(text);
-      const activePair = findNearestActiveBracketPair(text, view.state.selection.main.head);
+      // 失焦后选区仍在；不把光标当作「在括号内」，用 -1 清除 pair-active / 括号内范围高亮。
+      const cursorHead = view.hasFocus ? view.state.selection.main.head : -1;
+      const activePair = findNearestActiveBracketPair(text, cursorHead);
       const activeBracketOffsets = activePair ? new Set<number>([activePair.openOffset, activePair.closeOffset]) : new Set<number>();
       const activeInnerRange = activePair ? { from: activePair.openOffset, to: activePair.closeOffset + 1 } : undefined;
       const pendingDecos: { from: number; to: number; deco: Decoration }[] = [];
@@ -250,6 +253,28 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
           `rrRegexTok rrRegexTok--pair-active-range rrRegexTok--pair-active-range-l${level}`,
         );
       }
+
+      /**
+       * 判断半开区间 [tFrom,tTo) 是否完全落在某一命名捕获组前缀 `(?<…>` / `(?'…'` 区间内。
+       *
+       * @param tFrom 起始偏移（含）。
+       * @param tTo 结束偏移（不含）。
+       * @returns 被某前缀区间完全包含时为 true。
+       */
+      function tokenFullyInsideNamedHeader(tFrom: number, tTo: number): boolean {
+        return decorHints.namedGroupHeaderRanges.some((h) => tFrom >= h.from && tTo <= h.to);
+      }
+
+      for (const hdr of decorHints.namedGroupHeaderRanges) {
+        const meta = bracketMetaByOffset.get(hdr.from);
+        const level = meta ? levelFromDepth(meta.depth) : 1;
+        pushMark(
+          hdr.from,
+          hdr.to,
+          `rrRegexTok rrRegexTok--group rrRegexTok--group-l${level} rrRegexTok--named-group-header`,
+        );
+      }
+
       let offset = 0;
       for (const tok of tokens) {
         const len = tok.value.length;
@@ -266,14 +291,18 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
             const charTo = charFrom + 1;
             const meta = bracketMetaByOffset.get(charFrom);
             if (!meta) continue;
-            pushMark(charFrom, charTo, classForBracketDepth(meta.kind, meta.depth));
+            const skipBaseForNamedOpen = ch === '(' && decorHints.namedGroupHeaderRanges.some((h) => h.from === charFrom);
+            if (!skipBaseForNamedOpen) {
+              pushMark(charFrom, charTo, classForBracketDepth(meta.kind, meta.depth));
+            }
             if (activeBracketOffsets.has(charFrom)) pushMark(charFrom, charTo, 'rrRegexTok rrRegexTok--pair-active');
           }
           continue;
         }
         if (tok.type === 'class' || tok.type === 'quant') {
-          // class/quant 仍保留 token 着色；活跃范围高亮由统一 range decoration 负责。
-          pushMark(from, to, classForToken(tok.type));
+          if (!tokenFullyInsideNamedHeader(from, to)) {
+            pushMark(from, to, classForToken(tok.type));
+          }
           for (let i = 0; i < tok.value.length; i += 1) {
             const ch = tok.value[i];
             if (ch !== '[' && ch !== ']' && ch !== '{' && ch !== '}') continue;
@@ -287,14 +316,17 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
           }
           continue;
         }
-        pushMark(from, to, classForToken(tok.type));
+        if (!tokenFullyInsideNamedHeader(from, to)) {
+          pushMark(from, to, classForToken(tok.type));
+        }
       }
-      for (const ng of decorHints.namedGroupNameRanges) {
-        pushMark(ng.from, ng.to, 'rrRegexTok rrRegexTok--named-group-name');
-      }
-      const diagnostics = collectRegexDiagnostics(text);
+      const diagnostics = collectRegexExpressionDiagnostics(text, uiLanguage);
       for (const d of diagnostics) {
-        pushMark(d.from, d.to, 'rrRegexTok rrRegexTok--error');
+        pushMark(
+          d.from,
+          d.to,
+          `rrRegexTok rrRegexTok--diagnostic-underline rrRegexTok--severity-${d.severity}`,
+        );
       }
       for (const c of decorHints.capturingOpens) {
         const pos = c.openOffset + 1;
@@ -386,64 +418,6 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     }
 
     /**
-     * 收集正则表达式诊断信息：括号配对问题与编译语法问题。
-     *
-     * @param text 正则文本。
-     * @returns 诊断列表（from/to/message）。
-     */
-    function collectRegexDiagnostics(text: string): { from: number; to: number; message: string }[] {
-      const out: { from: number; to: number; message: string }[] = [];
-      const bracketDiagnostics = collectBracketDiagnostics(text);
-      out.push(...bracketDiagnostics);
-      const syntaxMessage = collectRegexSyntaxError(text);
-      // 若已定位到具体括号错误，优先展示“精确定位”的下划线，不再叠加整段错误线。
-      if (syntaxMessage && text.length > 0 && bracketDiagnostics.length === 0) {
-        out.push({ from: 0, to: text.length, message: syntaxMessage });
-      }
-      return out;
-    }
-
-    /**
-     * 检查正则编译错误，并返回可读错误信息。
-     *
-     * @param text 正则文本。
-     * @returns 错误消息；若可编译则返回 undefined。
-     */
-    function collectRegexSyntaxError(text: string): string | undefined {
-      if (!text) return undefined;
-      try {
-        // 仅做语法校验，不执行匹配。
-        new RegExp(text);
-        return undefined;
-      } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
-        if (!message) return uiLanguage === 'zh-CN' ? '正则语法错误' : 'Regex syntax error';
-        const translated = translateRegexErrorMessage(message, uiLanguage);
-        return uiLanguage === 'zh-CN' ? `正则语法错误：${translated}` : `Regex syntax error: ${translated}`;
-      }
-    }
-
-    /**
-     * 将 RegExp 原始错误消息转换为更友好的中英文短句。
-     *
-     * @param message 原始错误消息。
-     * @param language 当前 UI 语言。
-     * @returns 翻译/归一化后的短句。
-     */
-    function translateRegexErrorMessage(message: string, language: LanguageCode): string {
-      if (language !== 'zh-CN') return message;
-      const m = message.toLowerCase();
-      if (m.includes('unterminated character class')) return '字符类未闭合（缺少 ]）';
-      if (m.includes('unterminated group')) return '分组未闭合（缺少 )）';
-      if (m.includes('nothing to repeat')) return '量词前缺少可重复目标';
-      if (m.includes('invalid regular expression flags')) return '正则标志无效';
-      if (m.includes('invalid group')) return '分组语法无效';
-      if (m.includes('invalid escape')) return '转义序列无效';
-      if (m.includes('unmatched')) return '存在未匹配的括号或分隔符';
-      return message;
-    }
-
-    /**
      * 输出正则编辑器调试日志（仅在本地开启 `localStorage.rr.regex.debug=1` 时生效）。
      *
      * @param tag 日志标签。
@@ -467,8 +441,8 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     function createDiagnosticsHoverTooltip() {
       return hoverTooltip((view, pos): Tooltip | null => {
         const text = view.state.doc.toString();
-        const diagnostics = collectRegexDiagnostics(text);
-        const hit = diagnostics.find((d) => d.from <= pos && pos <= d.to);
+        const diagnostics = collectRegexExpressionDiagnostics(text, uiLanguage);
+        const hit = pickDiagnosticAtPosition(diagnostics, pos);
         if (!hit) return null;
         return {
           pos: hit.from,

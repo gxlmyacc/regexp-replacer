@@ -114,16 +114,22 @@
   font-weight: 900;
 }
 
-/* 错误波浪线：underline-offset 过大时，装饰落在 CodeMirror coordsAtPos 的矩形下方，
- * hoverTooltip 会认定指针不在文本内而不触发气泡；略减偏移并垫高命中区。 */
-.rrRegexTok--error {
+/* 诊断波浪线（错误/警告共用几何）：underline-offset 过大时 hover 命中变差，故略减偏移并垫高命中区。 */
+.rrRegexTok--diagnostic-underline {
   text-decoration-line: underline;
   text-decoration-style: dashed;
-  text-decoration-color: var(--vscode-errorForeground, #f14c4c);
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
   text-decoration-skip-ink: none;
   padding-bottom: 6px;
+}
+
+.rrRegexTok--severity-error {
+  text-decoration-color: var(--vscode-errorForeground, #f14c4c);
+}
+
+.rrRegexTok--severity-warning {
+  text-decoration-color: var(--vscode-editorWarning-foreground, #ffcc00);
 }
 
 /* 正则错误提示 Tooltip：挂在 document.body 下，无 .regexExpressionEditor 祖先，勿嵌套在该块内。 */
@@ -181,9 +187,8 @@
   background: var(--vscode-editorInlayHint-background, rgba(255, 64, 52, 0.16));
 }
 
-/* 命名捕获组组名（不含 < > 定界符）：与圆括号 token 区分 */
-.rrRegexTok--named-group-name {
-  color: var(--vscode-symbolIcon-variableForeground, #9cdcfe);
-  font-weight: 600;
+/* 命名捕获组前缀 `(?<name>` / `(?'name'`：与圆括号同色，略加重字重 */
+.rrRegexTok--named-group-header {
+  font-weight: 700;
 }
 
