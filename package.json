@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "packageManager": "yarn@1.22.22",
   "publisher": "gxlmyacc",
   "license": "MIT",
