@@ -2,11 +2,19 @@
 
 Reusable **regex / text / wildcard** replacement commands for VS Code.
 
-We also ship a **Chrome extension** with the same RegExp UI: open it from the toolbar to test replacement rules and import/export command JSON in the browser (without applying edits to VS Code documents).
+## Chrome extension (RegExp UI only)
+
+We also ship a **Chrome extension** that exposes **only the RegExp UI** from this project (not “Replace in File” / “Replace in Selection” inside the browser). Click the toolbar icon to open the same management and testing page as in VS Code.
+
+Typical uses:
+
+- **Import / export** replacement command configurations as JSON (share rules between machines, back up settings, or move configs into VS Code’s `regexpReplacer.commands`).
+- **Test regex and rules** in isolation: edit expressions and flags, try text / wildcard / map modes, preview matches and replacements, and use explain/details tools—without touching editor files.
+- **Regex playground**: use it purely as a regex lab when you do not need the VS Code extension running.
 
 **Download:** [regexp-replacer-0.0.1.crx](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/release/regexp-replacer-0.0.1.crx)
 
-To install: open `chrome://extensions`, enable **Developer mode**, then drag the downloaded `.crx` onto the page.
+**Install:** open `chrome://extensions`, enable **Developer mode**, then drag the downloaded `.crx` onto the page. Alternatively, run `yarn build:chrome` and use **Load unpacked** on the folder `release/regexp-replacer-{version}/`.
 
 ## UI preview
 

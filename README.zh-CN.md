@@ -2,11 +2,19 @@
 
 为 VS Code 提供可复用的 **正则 / 文本 / 通配符** 替换命令。
 
-我们还提供 **Chrome 扩展**，同样包含 RegExp UI：点击工具栏图标即可在浏览器中测试替换规则，并导入/导出命令 JSON（不会在 VS Code 文档中直接执行替换）。
+## Chrome 扩展（仅 RegExp UI）
+
+我们还提供 **Chrome 扩展**，其中只包含本项目的 **RegExp UI** 部分（不包含浏览器内的「在文件中替换」「在选中文本中替换」）。点击工具栏图标即可打开与 VS Code 中相同的管理与测试页面。
+
+常见用途：
+
+- **导入 / 导出**规则替换配置（JSON）：在多设备间共享、备份，或导入到 VS Code 的 `regexpReplacer.commands` 设置中。
+- **测试正则与规则**：独立编辑表达式与 flags，试用文本 / 通配符 / 映射表等模式，查看匹配高亮与替换预览、解释/详情等工具，无需改动编辑器中的文件。
+- **仅作正则试验场**：不依赖 VS Code 扩展运行时，也可单独用来调试、验证正则表达式。
 
 **下载：** [regexp-replacer-0.0.1.crx](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/release/regexp-replacer-0.0.1.crx)
 
-安装方式：打开 `chrome://extensions`，开启**开发者模式**，将下载的 `.crx` 拖入页面；
+**安装：** 打开 `chrome://extensions`，开启**开发者模式**，将下载的 `.crx` 拖入页面；或在本地执行 `yarn build:chrome` 后，对 `release/regexp-replacer-{version}/` 目录使用**加载已解压的扩展程序**。
 
 ## 界面预览
 
