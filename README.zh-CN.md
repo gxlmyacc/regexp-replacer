@@ -2,6 +2,12 @@
 
 为 VS Code 提供可复用的 **正则 / 文本 / 通配符** 替换命令。
 
+我们还提供 **Chrome 扩展**，同样包含 RegExp UI：点击工具栏图标即可在浏览器中测试替换规则，并导入/导出命令 JSON（不会在 VS Code 文档中直接执行替换）。
+
+**下载：** [regexp-replacer-0.0.1.crx](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/release/regexp-replacer-0.0.1.crx)
+
+安装方式：打开 `chrome://extensions`，开启**开发者模式**，将下载的 `.crx` 拖入页面；
+
 ## 界面预览
 
 ### RegExp UI（Webview）

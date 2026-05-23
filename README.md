@@ -2,6 +2,12 @@
 
 Reusable **regex / text / wildcard** replacement commands for VS Code.
 
+We also ship a **Chrome extension** with the same RegExp UI: open it from the toolbar to test replacement rules and import/export command JSON in the browser (without applying edits to VS Code documents).
+
+**Download:** [regexp-replacer-0.0.1.crx](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/release/regexp-replacer-0.0.1.crx)
+
+To install: open `chrome://extensions`, enable **Developer mode**, then drag the downloaded `.crx` onto the page.
+
 ## UI preview
 
 ### RegExp UI (webview)
