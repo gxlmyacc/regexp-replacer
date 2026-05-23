@@ -16,9 +16,9 @@ Extension commands when searching the palette (for example, `RegExp`).
 
 ![Command palette entries](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/commands.png)
 
-### Editor title icon (optional)
+### Editor title icon
 
-When **Show icon** is on and **Icon placement** is **editor**, the title bar opens a submenu for Replace in File, Replace in Selection, and RegExp UI.
+When **Show icon** is enabled (default) and **Icon placement** is **editor**, the title bar opens a submenu for Replace in File, Replace in Selection, and RegExp UI.
 
 ![Editor title bar icon menu](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/icon-menu.png)
 
@@ -30,14 +30,56 @@ When **Show icon** is on and **Icon placement** is **editor**, the title bar ope
 - **Command hooks**: run VS Code command ids (or chained configured commands) before/after **each rule** in a replacement command.
 - **Import / Export (RegExp UI)**: import/export commands as JSON files.
 - **Resizable layout (RegExp UI)**: drag splitters to resize the left command list and the bottom tools dock.
-- **Optional icon / menu**: show a quick entry (editor title bar or status bar left/right); click for the same actions (Replace in File, Replace in Selection, RegExp UI). Editor placement uses a submenu; status bar uses QuickPick.
+- **Quick icon / menu** (on by default): show a quick entry in the editor title bar or status bar (left/right); click for Replace in File, Replace in Selection, and RegExp UI. Editor placement uses a submenu; status bar uses QuickPick. Disable **Show Icon** in settings if you prefer not to.
+- **Editor context menu** (on by default): Replace in File / Replace in Selection appear in the editor right-click menu. Set **Show Editor Context Menu** to `false` to hide them.
+
+## How to configure extension options
+
+### Settings UI (recommended)
+
+1. Open **Settings** (`File` → `Preferences` → `Settings`, or `Ctrl+,` / `Cmd+,`).
+2. Search for **RegExp Replacer** (or `regexpReplacer`).
+3. Under the **RegExp Replacer** section, adjust:
+
+| Setting | Key | Default | What it does |
+| --- | --- | --- | --- |
+| Show Icon | `regexpReplacer.ui.showIcon` | `true` | Show the quick entry (title bar submenu or status bar menu) including **RegExp UI**. |
+| Show Editor Context Menu | `regexpReplacer.ui.showEditorContextMenu` | `true` | Add **Replace in File** / **Replace in Selection** to the editor right-click menu. |
+| Icon Placement | `regexpReplacer.ui.iconPlacement` | `editor` | Where the quick entry appears when **Show Icon** is on: `editor` (title bar), `statusBarLeft`, or `statusBarRight`. |
+
+User settings apply globally; **Workspace** tab overrides apply only to the current folder. Use **Open Settings (JSON)** from the settings gear menu to edit `settings.json` directly.
+
+### Command Palette
+
+You can also run extension commands without changing settings:
+
+- **RegExp Replacer: RegExp UI** — open the management webview.
+- **RegExp Replacer: Replace in File** / **Replace in Selection** — run a configured command on the active editor.
+
+Search the palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) for `RegExp` or `RegExp Replacer`.
+
+### `settings.json`
+
+Paste UI options next to your command list, for example:
+
+```json
+{
+  "regexpReplacer.ui.showIcon": true,
+  "regexpReplacer.ui.showEditorContextMenu": true,
+  "regexpReplacer.ui.iconPlacement": "editor",
+  "regexpReplacer.commands": []
+}
+```
+
+Use **RegExp UI** to create and edit `regexpReplacer.commands`, or maintain the array manually in `settings.json` (see format below).
 
 ## Configuration
 
 Commands are stored in VS Code settings under:
 
 - `regexpReplacer.commands`: `ReplaceCommand[]`
-- `regexpReplacer.ui.showIcon`: `boolean` (show the quick entry when enabled)
+- `regexpReplacer.ui.showIcon`: `boolean` (default: `true`; quick entry for Replace in File, Replace in Selection, RegExp UI)
+- `regexpReplacer.ui.showEditorContextMenu`: `boolean` (default: `true`; set `false` to hide Replace in File / Replace in Selection from the editor context menu)
 - `regexpReplacer.ui.iconPlacement`: `editor | statusBarLeft | statusBarRight` (default: `editor`; status bar opens a quick pick on click)
 
 Each command can contain multiple rules executed in order:
@@ -137,39 +179,7 @@ Notes:
 - UI-only states (temporary template input, active tools tab, etc.) are cached per (command + rule) for convenience and are **not** written into settings.
 - Test text is UI-only by default. If you enable **Save test text** in RegExp UI, it will be saved to settings as `rule.testText` and restored next time.
 
-## Development
+## Contributing
 
-Prerequisites:
-
-- Node.js and npm
-
-Install dependencies (note: if you have a custom npm registry, force the public registry):
-
-```bash
-npm install --registry https://registry.npmjs.org/
-```
-
-Build webview:
-
-```bash
-cd webview
-npm install --registry https://registry.npmjs.org/
-npm run build
-```
-
-Compile extension:
-
-```bash
-npm run compile
-```
-
-Run:
-
-- Press `F5` in VS Code to launch the Extension Development Host.
-
-Or use the dev helper (starts TypeScript watch + webview dev server with auto port prompt):
-
-```bash
-npm run dev
-```
+How to build and debug this repository locally is documented for contributors in [CONTRIBUTING.md](CONTRIBUTING.md).
 

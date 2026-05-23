@@ -9,6 +9,7 @@
   "submenu.editorTitle.label": "RegExp Replacer",
   "configuration.title": "RegExp Replacer",
   "configuration.ui.showIcon.description": "Show an icon/menu for quick actions. Placement is controlled by Icon Placement.",
+  "configuration.ui.showEditorContextMenu.description": "Add RegExp Replacer entries to the editor right-click context menu.",
   "configuration.ui.iconPlacement.description": "Where to show the icon and action menu when Show Icon is enabled.",
   "configuration.ui.iconPlacement.editor": "Editor title bar (top-right), while the editor has focus.",
   "configuration.ui.iconPlacement.statusBarLeft": "Status bar on the left.",

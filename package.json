@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "packageManager": "yarn@1.22.22",
   "publisher": "gxlmyacc",
   "license": "MIT",
@@ -70,12 +70,12 @@
         {
           "command": "regexpReplacer.replaceInFile",
           "group": "regexpReplacer@1",
-          "when": "resourceScheme =~ /^(file|untitled|vscode-notebook-cell|vscode-interactive-input)$/"
+          "when": "config.regexpReplacer.ui.showEditorContextMenu && resourceScheme =~ /^(file|untitled|vscode-notebook-cell|vscode-interactive-input)$/"
         },
         {
           "command": "regexpReplacer.replaceInSelection",
           "group": "regexpReplacer@2",
-          "when": "editorHasSelection && resourceScheme =~ /^(file|untitled|vscode-notebook-cell|vscode-interactive-input)$/"
+          "when": "config.regexpReplacer.ui.showEditorContextMenu && editorHasSelection && resourceScheme =~ /^(file|untitled|vscode-notebook-cell|vscode-interactive-input)$/"
         }
       ],
       "editor/title": [
@@ -105,8 +105,13 @@
       "properties": {
         "regexpReplacer.ui.showIcon": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "%configuration.ui.showIcon.description%"
+        },
+        "regexpReplacer.ui.showEditorContextMenu": {
+          "type": "boolean",
+          "default": true,
+          "description": "%configuration.ui.showEditorContextMenu.description%"
         },
         "regexpReplacer.ui.iconPlacement": {
           "type": "string",

@@ -6,7 +6,7 @@ dist-webview
 .history
 .vite
 .vscode-test
-/release
+/release/**/* */
 /coverage
 /chrome-extension/ui
 /chrome-extension/pem

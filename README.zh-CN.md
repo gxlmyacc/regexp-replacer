@@ -16,9 +16,9 @@
 
 ![命令面板中的扩展命令](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/commands.png)
 
-### 编辑器标题栏图标（可选）
+### 编辑器标题栏图标
 
-开启 **显示图标** 且 **图标位置** 为 **编辑器** 时，标题栏图标可展开子菜单：在文件中替换、在选中文本中替换、RegExp UI。
+默认开启 **显示图标** 且 **图标位置** 为 **编辑器** 时，标题栏图标可展开子菜单：在文件中替换、在选中文本中替换、RegExp UI。
 
 ![编辑器标题栏图标与子菜单](https://raw.githubusercontent.com/gxlmyacc/regexp-replacer/master/images/icon-menu.png)
 
@@ -30,14 +30,56 @@
 - **命令前置/后置**：在**每条规则**执行前后运行 VS Code 命令 id（或其它已配置命令 id，用于链式执行）。
 - **导入 / 导出（RegExp UI）**：以 JSON 文件导入/导出命令配置。
 - **可拖拽布局（RegExp UI）**：拖拽分割线调整左侧命令列表宽度与底部工具区高度。
-- **可选快捷图标/菜单**：可将入口放在编辑器标题栏或底部状态栏左/右侧；点击后选择「在文件中替换」「在选中文本中替换」「RegExp UI」（标题栏为子菜单，状态栏为 QuickPick）。
+- **快捷图标/菜单**（默认开启）：入口可放在编辑器标题栏或底部状态栏左/右侧；点击后选择「在文件中替换」「在选中文本中替换」「RegExp UI」（标题栏为子菜单，状态栏为 QuickPick）。若不需要，在设置中将 **显示图标** 关闭。
+- **编辑器右键菜单**（默认开启）：右键菜单中显示「在文件中替换」「在选中文本中替换」。若不需要，将 **显示编辑器右键菜单** 设为 `false`。
+
+## 如何配置扩展选项
+
+### 设置界面（推荐）
+
+1. 打开 **设置**（`文件` → `首选项` → `设置`，或 `Ctrl+,` / `Cmd+,`）。
+2. 搜索 **正则替换器** 或 `regexpReplacer`。
+3. 在 **正则替换器** 分组下可调整：
+
+| 设置项 | 配置键 | 默认值 | 作用 |
+| --- | --- | --- | --- |
+| 显示图标 | `regexpReplacer.ui.showIcon` | `true` | 显示快捷入口（标题栏子菜单或状态栏菜单），其中包含 **RegExp UI**。 |
+| 显示编辑器右键菜单 | `regexpReplacer.ui.showEditorContextMenu` | `true` | 在编辑器右键菜单中加入「在文件中替换」「在选中文本中替换」。 |
+| 图标位置 | `regexpReplacer.ui.iconPlacement` | `editor` | **显示图标** 开启时入口位置：`editor`（标题栏）、`statusBarLeft`（状态栏左侧）、`statusBarRight`（状态栏右侧）。 |
+
+**用户** 设置全局生效；**工作区** 页签中的设置仅对当前文件夹生效。也可通过设置页右上角齿轮 → **打开设置(JSON)** 直接编辑 `settings.json`。
+
+### 命令面板
+
+不修改设置也可使用扩展命令：
+
+- **正则替换器: RegExp UI** — 打开命令管理 Webview。
+- **正则替换器: 在文件中替换** / **在选中文本中替换** — 对当前编辑器执行已配置命令。
+
+在命令面板（`Ctrl+Shift+P` / `Cmd+Shift+P`）中搜索 `RegExp` 或 `正则替换器`。
+
+### `settings.json`
+
+可将 UI 选项与命令列表写在同一文件中，例如：
+
+```json
+{
+  "regexpReplacer.ui.showIcon": true,
+  "regexpReplacer.ui.showEditorContextMenu": true,
+  "regexpReplacer.ui.iconPlacement": "editor",
+  "regexpReplacer.commands": []
+}
+```
+
+`regexpReplacer.commands` 建议在 **RegExp UI** 中可视化编辑，也可按下方格式在 `settings.json` 中手写维护。
 
 ## 配置
 
 命令配置存储在 VS Code Settings 中：
 
 - `regexpReplacer.commands`: `ReplaceCommand[]`
-- `regexpReplacer.ui.showIcon`: `boolean`（是否显示快捷入口）
+- `regexpReplacer.ui.showIcon`: `boolean`（默认 `true`；快捷入口，含在文件中替换、在选中文本中替换、RegExp UI）
+- `regexpReplacer.ui.showEditorContextMenu`: `boolean`（默认 `true`；设为 `false` 时不在编辑器右键菜单中显示上述替换入口）
 - `regexpReplacer.ui.iconPlacement`: `editor | statusBarLeft | statusBarRight`（默认 `editor`：`editor` 为编辑器标题栏；`statusBarLeft` / `statusBarRight` 为底部状态栏左/右侧，点击后弹出 QuickPick）
 
 每个命令可包含多条规则，按顺序执行：
@@ -138,39 +180,7 @@
 - 临时替换模板、底部页签等属于 **UI 临时态**，会按（命令 + 规则）缓存以便切换还原，但**不会写入 Settings**。
 - 测试文本默认仅为 UI 临时态；如在 RegExp UI 勾选 **保存测试文本**，则会把当前规则的测试文本保存到 settings 的 `rule.testText`，下次打开会自动回填。
 
-## 开发
+## 参与开发
 
-前置条件：
-
-- Node.js 与 npm
-
-安装依赖（如果你本机配置了私有 npm registry，可强制指定公共 registry）：
-
-```bash
-npm install --registry https://registry.npmjs.org/
-```
-
-构建 Webview：
-
-```bash
-cd webview
-npm install --registry https://registry.npmjs.org/
-npm run build
-```
-
-编译扩展：
-
-```bash
-npm run compile
-```
-
-运行：
-
-- 在 VS Code 中按 `F5` 启动 Extension Development Host 调试。
-
-或使用 dev 脚本（同时启动 TS watch 与 Webview dev server，并在端口占用时提示输入新端口）：
-
-```bash
-npm run dev
-```
+本地构建与调试说明见 [CONTRIBUTING.zh-CN.md](CONTRIBUTING.zh-CN.md)（英文版：[CONTRIBUTING.md](CONTRIBUTING.md)）。
 
