@@ -78,10 +78,10 @@ async function copyDirEnsured(srcDir, destDir) {
  * 构建 Chrome 扩展的 UI 资源，并把扩展运行所需文件同步到 release 目录，生成完整可打包的扩展包目录。
  *
  * 产物结构：
- * - release/chrome-extension/manifest.json
- * - release/chrome-extension/background.js
- * - release/chrome-extension/ui/**（由 Vite 输出）
- * - release/chrome-extension/icon/**（如存在）
+ * - release/regexp-replacer-{version}/manifest.json
+ * - release/regexp-replacer-{version}/background.js
+ * - release/regexp-replacer-{version}/ui/**（由 Vite 输出）
+ * - release/regexp-replacer-{version}/icon/**（如存在）
  *
  * @returns {Promise<void>} 无返回值。
  */
@@ -108,14 +108,14 @@ async function main() {
     throw new Error(`[build:chrome] manifest.json 缺少 version 字段：${manifestSrc}`);
   }
 
-  const releaseDirName = `chrome-extension-v${version}`;
+  const releaseDirName = `regexp-replacer-${version}`;
   const releaseRoot = path.resolve(repoRoot, 'release', releaseDirName);
 
-  // 1) 构建 UI 到 release/<chrome-extension-vX.Y.Z>/ui
+  // 1) 构建 UI 到 release/regexp-replacer-{version}/ui
   process.env.REGEXP_REPLACER_CHROME_RELEASE_DIR = releaseDirName;
   await runProcess('vite build (chrome ui)', YARN_BIN, ['vite', 'build', '-c', 'webview/vite.chrome.config.ts']);
 
-  // 2) 同步扩展运行所需文件到 release/<chrome-extension-vX.Y.Z>
+  // 2) 同步扩展运行所需文件到 release/regexp-replacer-{version}
   await fs.mkdir(releaseRoot, { recursive: true });
   await copyFileEnsured(manifestSrc, path.resolve(releaseRoot, 'manifest.json'));
   await copyFileEnsured(backgroundSrc, path.resolve(releaseRoot, 'background.js'));

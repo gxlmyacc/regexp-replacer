@@ -8,8 +8,8 @@ import { repoIconFaviconPlugin } from './viteRepoIconFaviconPlugin';
  *
  * 说明：
  * - 使用 base:'./' 生成相对资源路径，适配 chrome-extension:// URL。
- * - 默认输出到 release/chrome-extension/ui。
- * - 若设置环境变量 REGEXP_REPLACER_CHROME_RELEASE_DIR，则输出到 release/<dir>/ui。
+ * - 默认输出到 release/regexp-replacer/ui（仅 UI 构建脚本）。
+ * - 若设置环境变量 REGEXP_REPLACER_CHROME_RELEASE_DIR，则输出到 release/<dir>/ui（完整 Chrome 构建为 regexp-replacer-{version}）。
  */
 export default defineConfig({
   root: __dirname,
@@ -24,7 +24,7 @@ export default defineConfig({
       __dirname,
       '..',
       'release',
-      process.env.REGEXP_REPLACER_CHROME_RELEASE_DIR || 'chrome-extension',
+      process.env.REGEXP_REPLACER_CHROME_RELEASE_DIR || 'regexp-replacer',
       'ui',
     ),
     emptyOutDir: true,
