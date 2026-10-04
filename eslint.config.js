@@ -22,6 +22,7 @@ function buildConfig() {
         '**/.vscode-test/**',
         'release/**',
         'dist-webview/**',
+        'dist-site/**',
         'chrome-extension/**',
         'chrome-extension/ui/**',
       ],

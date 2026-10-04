@@ -2,8 +2,10 @@ node_modules
 %CD%
 dist
 dist-webview
+dist-site
 .npm-cache
 .history
+.codegraph
 .vite
 .vscode-test
 /release/**/* */

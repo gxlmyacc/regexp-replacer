@@ -32,13 +32,12 @@ export function createVscodeApi() {
       ? acquireVsCodeApi
       : (globalThis as any).acquireVsCodeApi;
 
-  // 在 Vite dev server（浏览器打开）场景下，acquireVsCodeApi 不存在；这里提供一个本地 mock，
-  // 以便开发时能打开预留页面并调试 UI。
+  // Chrome 扩展、静态网站和开发服务器共用浏览器实现，将配置保存在本地。
   if (typeof apiFactory !== 'function') {
     const stateKey = 'regexpReplacer.__mockState__';
     const configKey = 'regexpReplacer.commands';
     const seededKey = 'regexpReplacer.__mockSeeded__';
-    const seedUrl = '/regexpReplacer.dev.commands.json';
+    const seedUrl = './regexpReplacer.dev.commands.json';
 
     const readJson = <T,>(key: string, fallback: T): T => {
       try {
@@ -63,7 +62,7 @@ export function createVscodeApi() {
     };
 
     /**
-     * 触发浏览器下载 JSON 文件（仅 dev mock 使用）。
+     * 触发浏览器下载 JSON 文件。
      *
      * @param filename 文件名。
      * @param data JSON 数据。
@@ -84,7 +83,7 @@ export function createVscodeApi() {
     };
 
     /**
-     * 打开文件选择器并读取 JSON（仅 dev mock 使用）。
+     * 打开文件选择器并读取 JSON。
      *
      * @returns 读取到的 JSON 值；读取失败返回 undefined。
      */
@@ -118,19 +117,14 @@ export function createVscodeApi() {
       postMessage(message: WebviewRequest) {
         if (message.type === 'getConfig') {
           const existing = localStorage.getItem(configKey);
-          const existingIsEmptyArray = existing?.trim() === '[]';
-          if (existing && !existingIsEmptyArray) {
+          // 空数组也是已保存配置；删除全部规则后刷新不应重新导入演示数据。
+          if (existing !== null) {
             emit({ type: 'config', payload: readJson(configKey, []) });
             return;
           }
 
           // 首次启动：从本地预置 JSON 读取测试命令（可被后续 setConfig 覆盖到 localStorage）
           // 注意：只有在成功写入 commands 后才标记 seeded，避免“第一次 fetch 失败导致永远不再重试”。
-          const seeded = localStorage.getItem(seededKey) === '1';
-          if (seeded && existing) {
-            emit({ type: 'config', payload: readJson(configKey, []) });
-            return;
-          }
           fetch(seedUrl)
             .then(async (r) => (r.ok ? await r.json() : []))
             .then((data) => {

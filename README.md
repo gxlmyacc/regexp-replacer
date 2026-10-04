@@ -2,6 +2,16 @@
 
 Reusable **regex / text / wildcard** replacement commands for VS Code.
 
+## Website (GitHub Pages)
+
+[Open RegExp Replacer online](https://gxlmyacc.github.io/regexp-replacer/).
+
+The website uses the same page as the Chrome extension: manage rules, test expressions and preview replacements, with JSON import/export. Rules and UI preferences are stored in your browser locally; use JSON files to transfer configurations between the website, Chrome extension and VS Code.
+
+Run `yarn dev:site` for development, `yarn build:site` to generate `dist-site/`, and `yarn preview:site` to preview the production build. The output uses relative asset URLs and can be hosted under a repository subdirectory.
+
+To publish, select **GitHub Actions** in the repository's **Settings → Pages → Build and deployment → Source**, then push to `master` or manually run **Deploy GitHub Pages** in Actions. The workflow uploads only `dist-site/`. See [GitHub's workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+
 ## Chrome extension (RegExp UI only)
 
 We also ship a **Chrome extension** that exposes **only the RegExp UI** from this project (not “Replace in File” / “Replace in Selection” inside the browser). Click the toolbar icon to open the same management and testing page as in VS Code.

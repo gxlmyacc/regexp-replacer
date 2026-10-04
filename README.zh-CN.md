@@ -2,6 +2,16 @@
 
 为 VS Code 提供可复用的 **正则 / 文本 / 通配符** 替换命令。
 
+## 在线网站（GitHub Pages）
+
+[在线打开正则替换器](https://gxlmyacc.github.io/regexp-replacer/)。
+
+网站复用 Chrome 扩展的页面，支持管理规则、测试表达式、预览替换结果和 JSON 导入导出。规则与界面设置保存在当前浏览器本地；网站、Chrome 扩展与 VS Code 之间可通过 JSON 文件迁移配置。
+
+执行 `yarn dev:site` 启动开发服务，`yarn build:site` 生成 `dist-site/`，`yarn preview:site` 预览生产构建。产物采用相对资源路径，支持部署到仓库子目录。
+
+发布时，在仓库 **Settings → Pages → Build and deployment → Source** 中选择 **GitHub Actions**，然后推送到 `master`，或在 Actions 中手动运行 **Deploy GitHub Pages**。工作流仅上传 `dist-site/`。参见 [GitHub 工作流文档](https://docs.github.com/zh/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。
+
 ## Chrome 扩展（仅 RegExp UI）
 
 我们还提供 **Chrome 扩展**，其中只包含本项目的 **RegExp UI** 部分（不包含浏览器内的「在文件中替换」「在选中文本中替换」）。点击工具栏图标即可打开与 VS Code 中相同的管理与测试页面。

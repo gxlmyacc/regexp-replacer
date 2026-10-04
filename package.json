@@ -310,6 +310,9 @@
     "build:webview:analyze": "vite build -c webview/vite.config.ts --mode analyze",
     "build:chrome:ui": "vite build -c webview/vite.chrome.config.ts",
     "build:chrome": "node ./scripts/build-chrome.mjs",
+    "build:site": "vite build -c webview/vite.site.config.ts",
+    "dev:site": "vite -c webview/vite.site.config.ts",
+    "preview:site": "vite preview -c webview/vite.site.config.ts",
     "dev:webview": "vite -c webview/vite.config.ts",
     "dev": "node ./scripts/dev.mjs",
     "vscode:prepublish": "node ./scripts/vscode-prepublish.mjs",
@@ -362,6 +365,6 @@
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "regenerator-runtime": "^0.14.1",
-    "use-modal-ref": "^0.1.6-alpha.3"
+    "use-modal-ref": "^0.1.6-alpha.7"
   }
 }

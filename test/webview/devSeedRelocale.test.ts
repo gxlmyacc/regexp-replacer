@@ -25,6 +25,7 @@ function cmd(id: string, patch: Partial<ReplaceCommand> = {}): ReplaceCommand {
 
 describe('devSeedRelocale', () => {
   afterEach(() => {
+    window.history.replaceState(null, '', '/');
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -136,5 +137,14 @@ describe('devSeedRelocale', () => {
     const out = await fetchAndSanitizeDevSeedCommands('en');
     expect(out.length).toBeGreaterThanOrEqual(1);
     expect(out[0].id).toBe('cmd_test');
+  });
+
+  test('语言切换在 GitHub Pages 子目录中加载预置文案', async () => {
+    window.history.replaceState(null, '', '/regexp-replacer/');
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => [] });
+    vi.stubGlobal('fetch', fetchMock);
+    await fetchAndSanitizeDevSeedCommands('zh-CN');
+    const requestedUrl = new URL(fetchMock.mock.calls[0][0], document.baseURI);
+    expect(requestedUrl.pathname).toBe('/regexp-replacer/regexpReplacer.dev.commands.json');
   });
 });
