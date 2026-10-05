@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { EditorView } from '@codemirror/view';
+import type { EditorView, ViewUpdate } from '@codemirror/view';
 import { Decoration, ViewPlugin } from '@codemirror/view';
 import { hoverTooltip } from '@codemirror/view';
 import { RangeSetBuilder, StateEffect } from '@codemirror/state';
@@ -45,20 +45,25 @@ export function useTesterMatchesCm(opt: UseTesterMatchesCmOptions): UseTesterMat
   const matchesRef = useRef<MatchItem[]>([]);
   const currentIndexRef = useRef<number | undefined>(undefined);
   const setCurrentIndexRef = useRef(setCurrentMatchIndex);
+  const inputRef = useRef({ selectedRule, text, onBeforeRecompute });
+  const selectionTokenRef = useRef(0);
+  const previousRuleKeyRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       computeTokenRef.current += 1;
       if (computeTimerRef.current) window.clearTimeout(computeTimerRef.current);
       computeTimerRef.current = undefined;
+      selectionTokenRef.current += 1;
     };
   }, []);
 
-  // 同步写入 ref：确保 reconfigure/constructor 读取到最新 matches（避免必须聚焦才刷新高亮）
-  matchesRef.current = matches;
+  // 匹配结果仅在计算完成时发布；React 重渲染不能恢复属于旧文档的结果。
   currentIndexRef.current = currentMatchIndex;
   setCurrentIndexRef.current = setCurrentMatchIndex;
+  inputRef.current = { selectedRule, text, onBeforeRecompute };
 
   /**
    * 主动触发一次 CodeMirror update：用于在“规则变化但文档未变化”时，仍然刷新 decorations。
@@ -70,39 +75,47 @@ export function useTesterMatchesCm(opt: UseTesterMatchesCmOptions): UseTesterMat
   const forceRefreshDecorations = useCallback((): void => {
     const view = viewRef.current;
     if (!view) return;
-    // 发送一个自定义 effect，驱动 ViewPlugin.update 重建 decorations（规则变化但 doc 未变化也能刷新）。
-    view.dispatch({ effects: forceRefreshDecorationsEffect.of(null) });
+    // React effects 可能在 CodeMirror 更新中被同步刷新，延后 dispatch 避免嵌套更新。
+    queueMicrotask(() => {
+      if (!isMountedRef.current || viewRef.current !== view) return;
+      view.dispatch({ effects: forceRefreshDecorationsEffect.of(null) });
+    });
   }, [viewRef]);
 
   const clearMatches = useCallback((): void => {
+    computeTokenRef.current += 1;
+    if (computeTimerRef.current) window.clearTimeout(computeTimerRef.current);
+    computeTimerRef.current = undefined;
+    matchesRef.current = [];
     setMatches([]);
     setMatchError(undefined);
     forceRefreshDecorations();
-  }, []);
+  }, [forceRefreshDecorations]);
 
   const runCompute = useCallback(
     (token: number): void => {
       if (token !== computeTokenRef.current) return;
-      if (!isMountedRef.current) return;
-      const rule = (selectedRule ?? undefined) as unknown as TesterReplaceRule | undefined;
+      const { selectedRule: rule, text: latestText } = inputRef.current;
       if (!rule) {
         clearMatches();
         return;
       }
 
       try {
-        const items = computeMatches(rule, text, { maxMatches: 5000 });
+        const items = computeMatches(rule, latestText, { maxMatches: 5000 });
+        matchesRef.current = items;
         setMatches(items);
         setMatchError(undefined);
         forceRefreshDecorations();
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+        matchesRef.current = [];
         setMatches([]);
         setMatchError(msg);
         forceRefreshDecorations();
       }
     },
-    [clearMatches, forceRefreshDecorations, selectedRule, text],
+    [clearMatches, forceRefreshDecorations],
   );
 
   /**
@@ -114,33 +127,39 @@ export function useTesterMatchesCm(opt: UseTesterMatchesCmOptions): UseTesterMat
    */
   const computeNow = useCallback((): void => {
     if (computeTimerRef.current) window.clearTimeout(computeTimerRef.current);
+    computeTimerRef.current = undefined;
     const token = (computeTokenRef.current += 1);
-    onBeforeRecompute?.();
+    inputRef.current.onBeforeRecompute?.();
     runCompute(token);
-  }, [onBeforeRecompute, runCompute]);
+  }, [runCompute]);
 
   const scheduleCompute = useCallback((): void => {
     if (computeTimerRef.current) window.clearTimeout(computeTimerRef.current);
     const token = (computeTokenRef.current += 1);
     computeTimerRef.current = window.setTimeout(() => {
       if (token !== computeTokenRef.current) return;
-      if (!isMountedRef.current) return;
-      onBeforeRecompute?.();
+      computeTimerRef.current = undefined;
+      inputRef.current.onBeforeRecompute?.();
       runCompute(token);
     }, 200);
-  }, [onBeforeRecompute, runCompute]);
+  }, [runCompute]);
 
-  // 规则变化：立即重算（避免输入表达式“慢一拍”）
+  // 使用同一个入口区分规则与文本变化，避免文本每次触发立即计算和延迟计算。
   useEffect(() => {
-    if (!isReady) return;
-    computeNow();
-  }, [depsKey, isReady, computeNow]);
+    if (!isReady) {
+      previousRuleKeyRef.current = undefined;
+      clearMatches();
+      return;
+    }
+    const ruleChanged = previousRuleKeyRef.current !== depsKey;
+    previousRuleKeyRef.current = depsKey;
+    if (ruleChanged) computeNow();
+    else scheduleCompute();
+  }, [depsKey, isReady, text, computeNow, scheduleCompute, clearMatches]);
 
-  // 文本变化：debounce 重算（避免大文本输入导致卡顿）
   useEffect(() => {
-    if (!isReady) return;
-    scheduleCompute();
-  }, [isReady, scheduleCompute, text]);
+    forceRefreshDecorations();
+  }, [matches, currentMatchIndex, forceRefreshDecorations]);
 
   const cmExtensions = useMemo(() => {
     const DECORATION_MAX = 1200;
@@ -150,14 +169,23 @@ export function useTesterMatchesCm(opt: UseTesterMatchesCmOptions): UseTesterMat
         constructor(view: EditorView) {
           this.decorations = buildDecorations(view, matchesRef.current, currentIndexRef.current, DECORATION_MAX);
         }
-        update(update: any) {
+        update(update: ViewUpdate) {
           const shouldForceRefresh = update.transactions?.some((tr: any) =>
             tr.effects?.some((e: any) => e.is?.(forceRefreshDecorationsEffect)),
           );
-          if (update.selectionSet) {
+          if (update.docChanged) {
+            // 旧匹配属于旧文档，重算前不能用于新文档的高亮或悬浮提示。
+            matchesRef.current = [];
+          }
+          if (update.selectionSet || update.docChanged) {
             const offset = update.state.selection.main.head;
             const idx = getMatchIndexByOffset(matchesRef.current, offset);
-            setCurrentIndexRef.current(idx);
+            currentIndexRef.current = idx;
+            const token = ++selectionTokenRef.current;
+            queueMicrotask(() => {
+              if (!isMountedRef.current || token !== selectionTokenRef.current) return;
+              setCurrentIndexRef.current(idx);
+            });
           }
           if (shouldForceRefresh || update.docChanged || update.viewportChanged || update.selectionSet) {
             this.decorations = buildDecorations(update.view, matchesRef.current, currentIndexRef.current, DECORATION_MAX);
@@ -185,7 +213,7 @@ export function useTesterMatchesCm(opt: UseTesterMatchesCmOptions): UseTesterMat
     });
 
     return [plugin, matchHover];
-  }, [matches, currentMatchIndex]);
+  }, []);
 
   return { matches, matchError, clearMatches, scheduleCompute, cmExtensions };
 }
@@ -248,6 +276,7 @@ function buildDecorations(
   const builder = new RangeSetBuilder<Decoration>();
   let count = 0;
   for (const it of matches) {
+    if (it.endOffset <= it.startOffset || it.startOffset < 0 || it.endOffset > view.state.doc.length) continue;
     if (it.endOffset <= from) continue;
     if (it.startOffset >= to) break;
     const isCurrent = currentMatchIndex !== undefined && it.index === currentMatchIndex;

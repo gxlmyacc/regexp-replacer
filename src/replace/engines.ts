@@ -38,7 +38,7 @@ export function applyRule(input: string, rule: ReplaceRule): ApplyRuleResult {
     default: {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       const _exhaustive: never = normalized.engine;
-      return _exhaustive;
+      throw new Error(`不支持的替换引擎：${String(_exhaustive)}`);
     }
   }
 }

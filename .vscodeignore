@@ -35,12 +35,15 @@ coverage-out/**
 
 # Webview dev artifacts
 dist-webview/regexpReplacer.dev.commands.json
+dist-site/**
 
 # Dev-only configs
 .vscode/**
 eslint.config.js
 cspell.json
 tsconfig*.json
+.codegraph/**
+.github/**
 
 # README screenshots (README uses raw.githubusercontent.com URLs; omit from .vsix to shrink package)
 images/**

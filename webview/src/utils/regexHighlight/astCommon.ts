@@ -2,7 +2,6 @@ import type {
   Backreference,
   CharacterClass,
   CharacterSet,
-  NamedBackreference,
   Quantifier,
 } from '@eslint-community/regexpp/ast';
 import type { RegexSemanticSpan } from './types';
@@ -24,7 +23,7 @@ export function semanticSpanFromCharacterClass(node: CharacterClass): RegexSeman
  * @returns span。
  */
 export function semanticSpanFromQuantifier(node: Quantifier): RegexSemanticSpan {
-  return { from: node.start, to: node.end, kind: 'quant' };
+  return { from: node.element.end, to: node.end, kind: 'quant' };
 }
 
 /**
@@ -67,7 +66,7 @@ export function semanticSpanFromBackreference(node: Backreference): RegexSemanti
  * @param node AST 节点。
  * @returns span。
  */
-export function semanticSpanFromNamedBackreference(node: NamedBackreference): RegexSemanticSpan {
+export function semanticSpanFromNamedBackreference(node: Backreference): RegexSemanticSpan {
   return { from: node.start, to: node.end, kind: 'escape' };
 }
 

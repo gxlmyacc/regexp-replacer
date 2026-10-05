@@ -70,13 +70,6 @@ export function collectBracketPairs(text: string): RegexBracketPair[] {
       charClassOpenOffset = i;
       continue;
     }
-    if (ch === ']') {
-      const top = stacks.square.pop();
-      if (top) {
-        pairs.push({ openOffset: top.openOffset, closeOffset: i, depth: top.depth, kind: 'square' });
-      }
-      continue;
-    }
     if (ch === '{') {
       stacks.curly.push({ openOffset: i, depth: stacks.curly.length + 1 });
       continue;

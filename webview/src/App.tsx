@@ -36,7 +36,6 @@ import { showRefModal } from 'use-modal-ref';
 import { useLeftPanelActions } from './components/leftPanel/useLeftPanelActions';
 import { attachHorizontalSplitDrag, attachVerticalSplitDrag } from './hooks/paneSplitDrag';
 import {
-  buildRuleKey,
   createDraftCommand,
   createDefaultRule,
   createCommandId,
@@ -157,7 +156,6 @@ export function App(): React.ReactElement {
    * @returns 无返回值。
    */
     function commitRenameAndContinueSave(cmdId: string, name: string, continueSave: boolean): void {
-      if (!isMountedRef.current) return;
       const nextName = name.trim();
       const nextList = commands.map((c) => (c.id === cmdId ? { ...c, title: nextName } : c));
       setCommands(nextList);
@@ -186,7 +184,7 @@ export function App(): React.ReactElement {
       validateCommandName(commandsRef.current, name, cmdId, {
         nameRequired: t.nameRequired,
         nameDuplicate: t.nameDuplicate,
-        nameReservedChars: (t as any).nameReservedChars ?? '名称中不允许包含保留字符：<>[]',
+        nameReservedChars: t.nameReservedChars,
       });
     try {
       const nextName = await showRefModal(
@@ -278,7 +276,7 @@ export function App(): React.ReactElement {
   }
 
   useEffect(() => {
-    for (const c of commands) ensureRuleUids(c.id, c.rules?.length ?? 0);
+    for (const c of commands) ensureRuleUids(c.id, c.rules.length);
   }, [commands]);
 
   useMessageRouter({
@@ -357,7 +355,6 @@ export function App(): React.ReactElement {
       prevUiLangForSeedRef.current = lang;
       return;
     }
-    if (prevUiLangForSeedRef.current === lang) return;
     prevUiLangForSeedRef.current = lang;
     let cancelled = false;
     void (async () => {
@@ -443,7 +440,8 @@ export function App(): React.ReactElement {
     }
     updateSelectedCommand((cmd) => {
       const rules = [...cmd.rules];
-      const r = rules[selectedRuleIndex] ?? rules[0];
+      const r = rules[selectedRuleIndex];
+      if (!r) return cmd;
       const prev = phase === 'pre' ? [...(r.preCommands ?? [])] : [...(r.postCommands ?? [])];
       if (!prev.includes(hookId)) prev.push(hookId);
       const nextRule = phase === 'pre' ? { ...r, preCommands: prev } : { ...r, postCommands: prev };
@@ -464,7 +462,8 @@ export function App(): React.ReactElement {
     if (!selected) return;
     updateSelectedCommand((cmd) => {
       const rules = [...cmd.rules];
-      const r = rules[selectedRuleIndex] ?? rules[0];
+      const r = rules[selectedRuleIndex];
+      if (!r) return cmd;
       const prev = phase === 'pre' ? [...(r.preCommands ?? [])] : [...(r.postCommands ?? [])];
       const next = prev.filter((x) => x !== hookId);
       const nextRule = phase === 'pre' ? { ...r, preCommands: next } : { ...r, postCommands: next };
@@ -484,7 +483,8 @@ export function App(): React.ReactElement {
     if (!selected) return;
     updateSelectedCommand((cmd) => {
       const rules = [...cmd.rules];
-      const r = rules[selectedRuleIndex] ?? rules[0];
+      const r = rules[selectedRuleIndex];
+      if (!r) return cmd;
       const prev = phase === 'pre' ? [...(r.preCommands ?? [])] : [...(r.postCommands ?? [])];
       // 仅在元素集合一致时写回，避免异常 drop 造成丢失
       const prevSet = new Set(prev);
@@ -505,10 +505,9 @@ export function App(): React.ReactElement {
   async function copyActiveToolsResult(tab: ToolsTab): Promise<void> {
     const text =
       tab === 'replace'
-        ? (replacePreview?.finalText ??
-            ((replacePreview?.parts ?? []).map((p) => p.text).join('') || (replacePreview?.text ?? '')))
+        ? (replacePreview?.finalText ?? '')
         : tab === 'list'
-          ? (testerMatches.matches.length >= 20_000 ? testerMatches.matches.slice(0, 20_000) : testerMatches.matches)
+          ? testerMatches.matches
               .map((m) => m.matchText)
               .join('\n')
           : '';
@@ -548,12 +547,10 @@ export function App(): React.ReactElement {
    * 设置当前规则的启用状态，并写回配置。
    *
    * - 缺省视为启用，因此启用时会删除 enable 字段（避免落盘冗余）。
-   * - 禁用时写入 enable=false。
    *
-   * @param enabled 是否启用。
    * @returns 无返回值。
    */
-  function setCurrentRuleEnabled(enabled: boolean): void {
+  function setCurrentRuleEnabled(): void {
     if (!selected) return;
     const cmdId = selected.id;
     let nextList: ReplaceCommand[] | null = null;
@@ -564,8 +561,7 @@ export function App(): React.ReactElement {
         const cur = rules[selectedRuleIndex];
         if (!cur) return c;
         const nextRule = { ...cur } as any;
-        if (enabled) delete nextRule.enable;
-        else nextRule.enable = false;
+        delete nextRule.enable;
         rules[selectedRuleIndex] = nextRule;
         return { ...c, rules };
       });
@@ -666,8 +662,8 @@ export function App(): React.ReactElement {
       const cmd = selected;
       const allForHooks = savedCommandsForHooks;
 
-      const preIds = cmd ? getSelectedRuleHooks(cmd, selectedRuleIndex, 'pre') : [];
-      const postIds = cmd ? getSelectedRuleHooks(cmd, selectedRuleIndex, 'post') : [];
+      const preIds = getSelectedRuleHooks(cmd!, selectedRuleIndex, 'pre');
+      const postIds = getSelectedRuleHooks(cmd!, selectedRuleIndex, 'post');
 
       const hookOpts = { ignoreUnknownHookId: true, maxDepth: 12 };
 
@@ -679,7 +675,6 @@ export function App(): React.ReactElement {
        * @returns 执行后的文本；异常时返回 input。
        */
       function safeRunHookChain(input: string, ids: string[]): string {
-        if (!ids.length) return input;
         try {
           return runHookChainOnText(input, ids, allForHooks, hookOpts);
         } catch (e) {
@@ -784,8 +779,8 @@ export function App(): React.ReactElement {
     t: {
       nameRequired: t.nameRequired,
       nameDuplicate: t.nameDuplicate,
-      nameReservedChars: (t as any).nameReservedChars ?? '名称中不允许包含保留字符：<>[]',
-      ruleTitleReservedChars: (t as any).ruleTitleReservedChars ?? '规则标题中不允许包含保留字符：<>[]',
+      nameReservedChars: t.nameReservedChars,
+      ruleTitleReservedChars: t.ruleTitleReservedChars,
       ruleLabel: t.ruleLabel,
       addRuleFirst: t.addRuleFirst,
       confirm: t.confirm,
@@ -955,7 +950,7 @@ export function App(): React.ReactElement {
               const cmd = commandsRef.current.find((c) => c.id === cmdId);
               if (!cmd) return;
               ensureRuleUids(cmdId, cmd.rules.length);
-              const prevUids = ruleUidsRef.current[cmdId] ?? [];
+              const prevUids = ruleUidsRef.current[cmdId];
               const prevSelectedUid = prevUids[selectedRuleIndex];
               const uidToRule = new Map<string, ReplaceRule>();
               for (let i = 0; i < cmd.rules.length; i += 1) {
@@ -1012,7 +1007,7 @@ export function App(): React.ReactElement {
         <Layout.Header className="toolbar">
           <Layout.Row justify="space-between" align="center" gap={8}>
             <Layout.Row className="toolbarLeft" justify="start" align="center" gap={8}>
-              <Tooltip content={(t as any).newRuleTip ?? t.newRule}>
+              <Tooltip content={t.newRuleTip}>
                 <Button
                   preset="topIcon"
                   type="primary"
@@ -1021,13 +1016,6 @@ export function App(): React.ReactElement {
                   onClick={() => {
                     if (!selected) return;
                     const cmdId = selected.id;
-                    const editor = testEditorRef.current;
-                    ensureRuleUids(cmdId, selected.rules.length);
-                    const currentRuleUid = ruleUidsRef.current[cmdId]?.[selectedRuleIndex] ?? createRuleUid();
-                    const currentRuleKey = buildRuleKey(cmdId, currentRuleUid);
-                    if (editor && currentRuleKey) {
-                      // 当前规则的 UI 临时态会在 useRuleUiCache 内自动写回；这里只需为新规则预置一份空缓存。
-                    }
                     setCommands((prev) => {
                       let nextIndex = 0;
                       const next = prev.map((cmd) => {
@@ -1036,7 +1024,7 @@ export function App(): React.ReactElement {
                         ensureRuleUids(cmdId, cmd.rules.length + 1);
                         return { ...cmd, rules: [...cmd.rules, createDefaultRule()] };
                       });
-                      const nextRuleUid = ruleUidsRef.current[cmdId]?.[nextIndex] ?? createRuleUid();
+                      const nextRuleUid = ruleUidsRef.current[cmdId][nextIndex];
                       uiCache.primeRuleCache(cmdId, nextIndex, nextRuleUid, {
                         testText: '',
                         replaceTemplate: '',
@@ -1088,7 +1076,7 @@ export function App(): React.ReactElement {
                     if (hideEnable) return null;
                     return (
                       <Layout.Row className="rrRuleEnableToggle" align="center" gap={4}>
-                        <Tooltip content={(t as any).ruleEnableTip ?? (t as any).ruleEnabled}>
+                        <Tooltip content={t.ruleEnableTip}>
                           <Button
                             preset="chip"
                             className="rrRuleEnableChip"
@@ -1114,7 +1102,7 @@ export function App(): React.ReactElement {
                     value={selected.rules[selectedRuleIndex].title}
                     fallbackLabel={`${t.ruleLabel} ${selectedRuleIndex + 1}`}
                     placeholder={t.ruleTitlePlaceholder}
-                    defaultTitleTip={(t as any).ruleTitleDefaultTip ?? ''}
+                    defaultTitleTip={t.ruleTitleDefaultTip}
                     onCommit={(nextTitle) => {
                       const prevTitle = selected.rules[selectedRuleIndex].title;
                       const prevNorm = (prevTitle ?? '').trim();
@@ -1122,7 +1110,7 @@ export function App(): React.ReactElement {
                       if (prevNorm === nextNorm) return; // 未变化：不标记 dirty
                       const err = validateRuleTitle(
                         String(nextTitle ?? ''),
-                        (t as any).ruleTitleReservedChars ?? '规则标题中不允许包含保留字符：<>[]',
+                        t.ruleTitleReservedChars,
                       );
                       if (err) {
                         Toast.show(err, 'error');
@@ -1214,11 +1202,11 @@ export function App(): React.ReactElement {
                   return (
                     <Layout.Row align="center" gap={10} style={{ padding: '0 2px', flexWrap: 'wrap' }}>
                       <Layout.Row align="center" gap={6} style={{ opacity: 0.85, flex: 'none' }}>
-                        <span>{(t as any).preCommandFull ?? '前置命令'}</span>
+                        <span>{t.preCommandFull}</span>
                         <Checkbox
                           checked={applyPreHooks}
                           onChange={(v) => setApplyPreHooks(v)}
-                          tooltip={(t as any).applyPreHooksTip ?? t.applyPreHooks}
+                          tooltip={t.applyPreHooksTip}
                           ariaLabel={t.applyPreHooks}
                         />
                       </Layout.Row>
@@ -1241,10 +1229,10 @@ export function App(): React.ReactElement {
                       <DropdownMenu
                         buttonLabel={t.preCommand}
                         buttonLabelSuffix={
-                          <Tooltip content={(t as any).preCommandTip ?? (t as any).preCommandFull ?? '前置命令'}>
+                          <Tooltip content={t.preCommandTip}>
                             <span
                               className="rrHookTitleHelpIcon"
-                              aria-label={(t as any).preCommandTip ?? (t as any).preCommandFull ?? '前置命令'}
+                              aria-label={t.preCommandTip}
                               role="img"
                             >
                               ?
@@ -1296,10 +1284,10 @@ export function App(): React.ReactElement {
                       <DropdownMenu
                         buttonLabel={t.postCommand}
                         buttonLabelSuffix={
-                          <Tooltip content={(t as any).postCommandTip ?? (t as any).postCommandFull ?? '后置命令'}>
+                          <Tooltip content={t.postCommandTip}>
                             <span
                               className="rrHookTitleHelpIcon"
-                              aria-label={(t as any).postCommandTip ?? (t as any).postCommandFull ?? '后置命令'}
+                              aria-label={t.postCommandTip}
                               role="img"
                             >
                               ?
@@ -1336,11 +1324,11 @@ export function App(): React.ReactElement {
                   return (
                     <Layout.Row align="center" gap={10} style={{ padding: '0 2px', flexWrap: 'wrap' }}>
                       <Layout.Row align="center" gap={6} style={{ opacity: 0.85, flex: 'none' }}>
-                        <span>{(t as any).postCommandFull ?? '后置命令'}</span>
+                        <span>{t.postCommandFull}</span>
                         <Checkbox
                           checked={applyPostHooks}
                           onChange={(v) => setApplyPostHooks(v)}
-                          tooltip={(t as any).applyPostHooksTip ?? t.applyPostHooks}
+                          tooltip={t.applyPostHooksTip}
                           ariaLabel={t.applyPostHooks}
                         />
                       </Layout.Row>
@@ -1366,8 +1354,8 @@ export function App(): React.ReactElement {
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   <Checkbox
                     checked={Boolean(saveTestTextChecked)}
-                    tooltip={(t as any).saveTestTextTip ?? ''}
-                    ariaLabel={(t as any).saveTestText ?? '保存测试文本'}
+                    tooltip={t.saveTestTextTip}
+                    ariaLabel={t.saveTestText}
                     onChange={(checked) => {
                       if (!selected) return;
                       updateSelectedCommand((cmd) => {
@@ -1375,7 +1363,7 @@ export function App(): React.ReactElement {
                         const cur = rules[selectedRuleIndex] as any;
                         if (!cur) return cmd;
                         const nextRule = { ...cur } as any;
-                        if (checked) nextRule.testText = uiCache.testText ?? '';
+                        if (checked) nextRule.testText = uiCache.testText;
                         else delete nextRule.testText;
                         rules[selectedRuleIndex] = nextRule;
                         return { ...cmd, rules };
@@ -1384,7 +1372,7 @@ export function App(): React.ReactElement {
                     }}
                   />
                   <span style={{ opacity: 0.8, fontSize: 12, userSelect: 'none' }}>
-                    {(t as any).saveTestText ?? '保存测试文本'}
+                    {t.saveTestText}
                   </span>
                 </span>
               </span>

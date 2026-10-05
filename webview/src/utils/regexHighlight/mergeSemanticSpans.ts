@@ -40,7 +40,6 @@ export function mergeSemanticSpans(base: RegexSemanticSpan[], ast: RegexSemantic
   for (let k = 0; k < sortedPts.length - 1; k += 1) {
     const from = sortedPts[k];
     const to = sortedPts[k + 1];
-    if (to <= from) continue;
     const astHit = ast.find((a) => a.from <= from && a.to >= to);
     const baseHit = base.find((b) => b.from <= from && b.to >= to);
     const pick = astHit ?? baseHit;

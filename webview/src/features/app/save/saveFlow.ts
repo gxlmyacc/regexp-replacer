@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { ReplaceCommand, ReplaceRule } from '../../../../../src/types';
+import type { ReplaceCommand } from '../../../../../src/types';
 import { buildPayloadFromList, isSavableRule, validateCommandName, validateRuleTitle } from '../../commands/saveUtils';
 import type { LanguageCode } from '../../../i18n';
 import { isPristineUntitledDraft, isUntitledCommandTitle } from '../../../utils';

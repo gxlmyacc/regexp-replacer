@@ -12,6 +12,7 @@ type DndProps = {
 };
 
 let lastDndProps: DndProps | null = null;
+let dragging = false;
 
 vi.mock('@dnd-kit/core', () => {
   return {
@@ -40,7 +41,7 @@ vi.mock('@dnd-kit/sortable', async () => {
       listeners: {},
       transform: null,
       transition: undefined,
-      isDragging: false,
+      isDragging: dragging,
     }),
   };
 });
@@ -72,6 +73,27 @@ function unmount(host: HTMLDivElement): void {
 }
 
 describe('HookChipsBar', () => {
+  test('拖拽预览、删除和无效落点不会误排序', () => {
+    dragging = true;
+    const remove = vi.fn();
+    const reorder = vi.fn();
+    const host = mount(<HookChipsBar items={[{ id: 'a', label: 'A', title: 'hint' }, { id: 'b', label: 'B' }]} onRemove={remove} onReorder={reorder} />);
+    try {
+      expect(host.querySelector('.hookChipPlaceholder')).not.toBeNull();
+      TestUtils.act(() => lastDndProps?.onDragStart?.({ active: { id: 'a' } }));
+      expect(host.querySelector('.hookChipOverlay')?.textContent).toBe('A');
+      TestUtils.act(() => host.querySelector<HTMLButtonElement>('button[aria-label="删除"]')!.click());
+      expect(remove).toHaveBeenCalledWith('a');
+      for (const event of [{}, { active: { id: 'a' } }, { active: { id: 'a' }, over: { id: 'a' } }, { active: { id: 'missing' }, over: { id: 'b' } }, { active: { id: 'a' }, over: { id: 'missing' } }]) {
+        TestUtils.act(() => lastDndProps?.onDragEnd?.(event));
+      }
+      expect(reorder).not.toHaveBeenCalled();
+      TestUtils.act(() => lastDndProps?.onDragStart?.({ active: { id: 'missing' } }));
+      expect(host.querySelector('.hookChipOverlay')).toBeNull();
+      TestUtils.act(() => lastDndProps?.onDragStart?.({}));
+      expect(host.querySelector('.hookChipOverlay')).toBeNull();
+    } finally { dragging = false; unmount(host); }
+  });
   test('无 items 返回 null；无 onReorder 时使用静态 Tag，并可删除', () => {
     const onRemove = vi.fn();
     const host0 = mount(<HookChipsBar items={[]} onRemove={onRemove} />);

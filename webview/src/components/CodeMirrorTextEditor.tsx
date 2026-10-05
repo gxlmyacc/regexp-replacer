@@ -27,6 +27,8 @@ export const CodeMirrorTextEditor = memo(function CodeMirrorTextEditor(props: Co
   const isApplyingValueRef = useRef(false);
   const lastValueRef = useRef<string>(value);
   const extCompartmentRef = useRef<Compartment | null>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
 
   const baseExtensions = useMemo(() => {
     const vscodeTheme = EditorView.theme(
@@ -61,7 +63,7 @@ export const CodeMirrorTextEditor = memo(function CodeMirrorTextEditor(props: Co
       if (isApplyingValueRef.current) return;
       const next = u.state.doc.toString();
       lastValueRef.current = next;
-      onChange?.(next);
+      onChangeRef.current?.(next);
     });
 
     return [
@@ -73,11 +75,9 @@ export const CodeMirrorTextEditor = memo(function CodeMirrorTextEditor(props: Co
       vscodeTheme,
       updateListener,
     ];
-  }, [onChange, ph, showLineNumbers]);
+  }, [ph, showLineNumbers]);
 
   useEffect(() => {
-    if (!hostRef.current) return;
-    if (viewRef.current) return;
 
     const extCompartment = new Compartment();
     extCompartmentRef.current = extCompartment;
@@ -86,7 +86,7 @@ export const CodeMirrorTextEditor = memo(function CodeMirrorTextEditor(props: Co
       doc: value ?? '',
       extensions: [extCompartment.of([...baseExtensions, ...extensions])],
     });
-    const view = new EditorView({ state, parent: hostRef.current });
+    const view = new EditorView({ state, parent: hostRef.current! });
     viewRef.current = view;
     onEditorReady?.(view);
 
@@ -97,17 +97,18 @@ export const CodeMirrorTextEditor = memo(function CodeMirrorTextEditor(props: Co
   }, []);
 
   useEffect(() => {
-    const view = viewRef.current;
-    const extCompartment = extCompartmentRef.current;
-    if (!view || !extCompartment) return;
-    view.dispatch({
-      effects: extCompartment.reconfigure([...baseExtensions, ...extensions]),
+    const view = viewRef.current!;
+    const extCompartment = extCompartmentRef.current!;
+    let active = true;
+    queueMicrotask(() => {
+      if (!active || viewRef.current !== view) return;
+      view.dispatch({ effects: extCompartment.reconfigure([...baseExtensions, ...extensions]) });
     });
+    return () => { active = false; };
   }, [baseExtensions, extensions]);
 
   useEffect(() => {
-    const view = viewRef.current;
-    if (!view) return;
+    const view = viewRef.current!;
     const next = value ?? '';
     if (next === lastValueRef.current) return;
 

@@ -21,8 +21,7 @@ export const VirtualList = memo(function VirtualList<T>(props: VirtualListProps<
   const [scrollTop, setScrollTop] = useState(0);
 
   useEffect(() => {
-    const el = hostRef.current;
-    if (!el) return;
+    const el = hostRef.current!;
     const ro = new ResizeObserver(() => {
       setViewportH(el.clientHeight || 240);
     });

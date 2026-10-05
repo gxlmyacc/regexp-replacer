@@ -22,7 +22,6 @@ function isDigitWordSpaceEscapeShorthand(el: CharacterClassElement): el is Escap
  * @returns 互补任意字符类时为 true。
  */
 function isComplementaryPairAnyCharClass(node: CharacterClass): boolean {
-  if (node.unicodeSets !== false) return false;
   if (node.negate) return false;
   if (node.elements.length !== 2) return false;
   const [a, b] = node.elements;
@@ -41,10 +40,9 @@ export const charClassShorthandAsciiWarningRule: RegexLintRule = {
    * 扫描 ClassRanges 字符类中的 digit/word/space 简写并产出警告。
    *
    * @param ctx Lint 上下文。
-   * @param _errorsSoFar 此前 error 列表（未使用）。
    * @returns 警告列表。
    */
-  collect(ctx: RegexLintContext, _errorsSoFar: readonly RegexExpressionDiagnostic[]): RegexExpressionDiagnostic[] {
+  collect(ctx: RegexLintContext): RegexExpressionDiagnostic[] {
     const pattern = ctx.parsedPattern;
     if (!pattern) return [];
     const f = ctx.flags;
@@ -55,7 +53,6 @@ export const charClassShorthandAsciiWarningRule: RegexLintRule = {
 
     visitRegExpAST(pattern, {
       onCharacterClassEnter(node: CharacterClass) {
-        if (node.unicodeSets !== false) return;
         if (isComplementaryPairAnyCharClass(node)) return;
         const hit = node.elements.some((el) => isDigitWordSpaceEscapeShorthand(el));
         if (!hit) return;

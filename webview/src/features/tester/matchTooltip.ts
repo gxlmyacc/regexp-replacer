@@ -35,15 +35,9 @@ export function findMatchAtOffset(matches: MatchItem[], pos: number): MatchItem 
   }
   if (cand < 0) return undefined;
 
-  // 向前回溯处理“空匹配 / 同起点”极端情况
-  for (let i = cand; i >= 0; i -= 1) {
-    const it = matches[i];
-    if (!it) continue;
-    if (it.startOffset > pos) continue;
-    if (it.endOffset < pos) break;
-    if (it.startOffset <= pos && pos <= it.endOffset) return it;
-  }
-  return undefined;
+  // 二分候选是最后一个 startOffset <= pos 的项；有序列表无需再次回溯。
+  const candidate = matches[cand];
+  return candidate.endOffset >= pos ? candidate : undefined;
 }
 
 /**

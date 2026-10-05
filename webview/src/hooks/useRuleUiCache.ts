@@ -79,9 +79,9 @@ export function useRuleUiCache(opt: UseRuleUiCacheOptions): UseRuleUiCacheResult
         toolsTab: fallback.toolsTab,
         currentMatchIndex: fallback.currentMatchIndex,
         listScrollTop: fallback.listScrollTop,
-        applyPreHooks: fallback.applyPreHooks ?? false,
-        applyPostHooks: fallback.applyPostHooks ?? false,
-        applyPrevRules: fallback.applyPrevRules ?? false,
+        applyPreHooks: fallback.applyPreHooks,
+        applyPostHooks: fallback.applyPostHooks,
+        applyPrevRules: fallback.applyPrevRules,
       };
       cacheRef.current[ruleKey] = created;
       return created;
@@ -160,10 +160,10 @@ export function useRuleUiCache(opt: UseRuleUiCacheOptions): UseRuleUiCacheResult
 
       isRestoringRef.current = true;
       try {
-        setTestTextState(nextCache.testText ?? '');
-        setReplaceInput(nextCache.replaceTemplate ?? '');
-        setToolsTab(nextCache.toolsTab ?? 'replace');
-        setListScrollTop(nextCache.listScrollTop ?? 0);
+        setTestTextState(nextCache.testText);
+        setReplaceInput(nextCache.replaceTemplate);
+        setToolsTab(nextCache.toolsTab);
+        setListScrollTop(nextCache.listScrollTop);
         setCurrentMatchIndex(nextCache.currentMatchIndex);
         setApplyPreHooks(Boolean(nextCache.applyPreHooks));
         setApplyPostHooks(Boolean(nextCache.applyPostHooks));

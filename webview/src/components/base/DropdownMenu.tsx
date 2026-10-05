@@ -86,7 +86,7 @@ export const DropdownMenu = memo(function DropdownMenu(props: DropdownMenuProps)
       const target = e.target as Node | null;
       if (!target) return;
       const targetEl = target instanceof Element ? target : target.parentElement;
-      const inPopover = targetEl?.closest('.rrDropdownMenu') !== null;
+      const inPopover = Boolean(targetEl?.closest('.rrDropdownMenu'));
       const inBtn = btnRef.current?.contains(target) ?? false;
       if (inPopover || inBtn) return;
       setOpen(false);

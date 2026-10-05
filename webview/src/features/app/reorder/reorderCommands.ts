@@ -1,4 +1,4 @@
-import type { ReplaceCommand } from '../../../../../../src/types';
+import type { ReplaceCommand } from '../../../../../src/types';
 
 /**
  * 根据目标 id 顺序重排命令列表，并保留未包含的项追加到末尾（避免草稿/异常数据丢失）。

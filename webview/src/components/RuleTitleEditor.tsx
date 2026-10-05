@@ -56,7 +56,7 @@ export const RuleTitleEditor = memo(function RuleTitleEditor(props: RuleTitleEdi
       autoFocus
     />
   ) : (
-    <Tooltip content={isDefaultTitle ? defaultTitleTip : ''}>
+    <Tooltip content={isDefaultTitle ? defaultTitleTip ?? '' : ''}>
       <button
         type="button"
         className="ruleTitleTag"

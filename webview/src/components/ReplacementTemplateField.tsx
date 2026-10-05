@@ -52,7 +52,6 @@ function tokenizeReplacementTemplate(template: string, maxCaptureGroupCount?: nu
    * @returns 无返回值。
    */
   function push(type: ReplacementTemplateTokenType, text: string): void {
-    if (!text) return;
     const prev = out[out.length - 1];
     // 仅合并 plain，避免把 $1$2$3 合并成一个 span（否则无法按 $n 分别着色）。
     if (type === 'plain' && prev && prev.type === type) {
@@ -116,21 +115,6 @@ function tokenizeReplacementTemplate(template: string, maxCaptureGroupCount?: nu
 }
 
 /**
- * 从 replacement-index token（如 $1、$12）解析出分组索引。
- *
- * @param tokenText token 文本。
- * @returns 分组索引（从 1 开始）；无法解析则返回 undefined。
- */
-function parseReplacementIndex(tokenText: string): number | undefined {
-  if (!tokenText || tokenText[0] !== '$') return undefined;
-  const raw = tokenText.slice(1);
-  if (!raw || !/^\d{1,2}$/.test(raw)) return undefined;
-  const n = Number.parseInt(raw, 10);
-  if (!Number.isFinite(n) || n <= 0) return undefined;
-  return n;
-}
-
-/**
  * 将分组索引映射到 1..6 的循环色阶。
  *
  * @param groupIndex 分组索引（从 1 开始）。
@@ -158,10 +142,11 @@ export const ReplacementTemplateField = memo(function ReplacementTemplateField(
         tokens.map((token, idx) => {
           let extraCls = '';
           if (token.type === 'replacement-index') {
-            const n = parseReplacementIndex(token.text);
+            // replacement-index 已由分词器验证为 1..99。
+            const n = Number.parseInt(token.text.slice(1), 10);
             const level =
-              n && captureGroupLevels && captureGroupLevels[n - 1] ? captureGroupLevels[n - 1] : n ? levelFromGroupIndex(n) : undefined;
-            if (level) extraCls = ` replacement-template-field__tok--replacement-index-l${level}`;
+              captureGroupLevels?.[n - 1] || levelFromGroupIndex(n);
+            extraCls = ` replacement-template-field__tok--replacement-index-l${level}`;
           }
           return (
             <span

@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import * as vscode from 'vscode';
-import { HookLoopError, runReplaceInFile } from '../../../src/replace/replaceRunner';
+import { runReplaceInFile } from '../../../src/replace/replaceRunner';
 import type { ReplaceCommand } from '../../../src/types';
 
 suite('hook loop detection (vscode)', () => {

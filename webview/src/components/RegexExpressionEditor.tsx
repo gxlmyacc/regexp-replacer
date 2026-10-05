@@ -164,24 +164,6 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       if (isApplyingValueRef.current) return;
       const nextRaw = u.state.doc.toString();
       const next = normalizeSingleLine(nextRaw);
-      if (nextRaw !== next) {
-        isApplyingValueRef.current = true;
-        try {
-          lastValueRef.current = next;
-          onChange(next);
-          onAfterChange();
-          const anchor = Math.min(u.state.selection.main.anchor, next.length);
-          u.view.dispatch({
-            changes: { from: 0, to: u.state.doc.length, insert: next },
-            selection: { anchor, head: anchor },
-          });
-        } finally {
-          queueMicrotask(() => {
-            isApplyingValueRef.current = false;
-          });
-        }
-        return;
-      }
       lastValueRef.current = next;
       onChange(next);
       onAfterChange();
@@ -291,7 +273,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       }
 
       if (activeInnerRange) {
-        const level = levelFromDepth(activePair?.depth ?? 1);
+        const level = levelFromDepth(activePair!.depth);
         pushMark(
           activeInnerRange.from,
           activeInnerRange.to,
@@ -480,6 +462,19 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
     }
 
     return [
+      // 在视图更新前归一化粘贴内容，避免 updateListener 内再次 dispatch。
+      EditorState.transactionFilter.of((transaction) => {
+        if (!transaction.docChanged) return transaction;
+        const raw = transaction.newDoc.toString();
+        const next = normalizeSingleLine(raw);
+        if (raw === next) return transaction;
+        const anchor = Math.min(transaction.newSelection.main.anchor, next.length);
+        return [transaction, {
+          changes: { from: 0, to: transaction.newDoc.length, insert: next },
+          selection: { anchor, head: anchor },
+          sequential: true,
+        }];
+      }),
       tooltips({ parent: document.body }),
       history(),
       singleLineEnterGuard,
@@ -495,8 +490,6 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
   }, [onAfterChange, onBlur, onChange, ph, regexFlags, uiLanguage]);
 
   useEffect(() => {
-    if (!hostRef.current) return;
-    if (viewRef.current) return;
 
     const extCompartment = new Compartment();
     extCompartmentRef.current = extCompartment;
@@ -504,7 +497,7 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
       doc: normalizeSingleLine(value ?? ''),
       extensions: [extCompartment.of(baseExtensions)],
     });
-    const view = new EditorView({ state, parent: hostRef.current });
+    const view = new EditorView({ state, parent: hostRef.current! });
     viewRef.current = view;
 
     return () => {
@@ -514,15 +507,13 @@ export const RegexExpressionEditor = memo(function RegexExpressionEditor(props: 
   }, []);
 
   useEffect(() => {
-    const view = viewRef.current;
-    const extCompartment = extCompartmentRef.current;
-    if (!view || !extCompartment) return;
+    const view = viewRef.current!;
+    const extCompartment = extCompartmentRef.current!;
     view.dispatch({ effects: extCompartment.reconfigure(baseExtensions) });
   }, [baseExtensions]);
 
   useEffect(() => {
-    const view = viewRef.current;
-    if (!view) return;
+    const view = viewRef.current!;
     const next = normalizeSingleLine(value ?? '');
     if (next === lastValueRef.current) return;
     isApplyingValueRef.current = true;

@@ -41,10 +41,9 @@ export const dotAllEquivalentSuggestionRule: RegexLintRule = {
    * 扫描「互补简写」字符类并产出建议。
    *
    * @param ctx Lint 上下文。
-   * @param _errorsSoFar 此前 error 列表（未使用）。
    * @returns 建议列表。
    */
-  collect(ctx: RegexLintContext, _errorsSoFar: readonly RegexExpressionDiagnostic[]): RegexExpressionDiagnostic[] {
+  collect(ctx: RegexLintContext): RegexExpressionDiagnostic[] {
     const pattern = ctx.parsedPattern;
     if (!pattern) return [];
     const t = getDict(ctx.language);

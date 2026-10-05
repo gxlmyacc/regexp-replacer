@@ -26,7 +26,7 @@ export const quantifierStyleSuggestionRule: RegexLintRule = {
    * @param _errorsSoFar 此前已收集的 error 列表（本规则未使用，仅为管线签名一致）。
    * @returns 建议级诊断列表。
    */
-  collect(ctx: RegexLintContext, _errorsSoFar: readonly RegexExpressionDiagnostic[]): RegexExpressionDiagnostic[] {
+  collect(ctx: RegexLintContext): RegexExpressionDiagnostic[] {
     const pattern = ctx.parsedPattern;
     if (!pattern) return [];
     const t = getDict(ctx.language);

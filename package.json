@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "packageManager": "yarn@1.22.22",
   "publisher": "gxlmyacc",
   "license": "MIT",
@@ -321,9 +321,9 @@
     "test": "npm run test:webview && npm run test:vscode && node ./dist/test-node/runTest.js",
     "test:webview": "vitest run -c test/webview/vitest.config.ts",
     "test:vscode": "node ./scripts/run-vscode-tests.mjs",
-    "coverage": "npm run coverage:webview && npm run coverage:vscode",
+    "coverage": "npm run coverage:webview",
     "coverage:webview": "vitest run -c test/webview/vitest.config.ts --coverage",
-    "coverage:vscode": "node ./scripts/run-vscode-tests.mjs --coverage"
+    "coverage:vscode": "vitest run -c test/webview/vitest.host.config.ts --coverage"
   },
   "devDependencies": {
     "@dnd-kit/core": "^6.3.1",

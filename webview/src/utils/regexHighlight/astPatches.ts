@@ -32,10 +32,7 @@ export function buildAstSemanticPatches(astRoot: Pattern): RegexSemanticSpan[] {
       spans.push(semanticSpanFromCharacterSet(node));
     },
     onBackreferenceEnter(node) {
-      spans.push(semanticSpanFromBackreference(node));
-    },
-    onNamedBackreferenceEnter(node) {
-      spans.push(semanticSpanFromNamedBackreference(node));
+      spans.push(typeof node.ref === 'string' ? semanticSpanFromNamedBackreference(node) : semanticSpanFromBackreference(node));
     },
   });
   return spans;

@@ -47,7 +47,6 @@ function tokenizeWildcardPattern(pattern: string): WildcardToken[] {
    * @returns 无返回值。
    */
   function push(type: WildcardTokenType, text: string): void {
-    if (!text) return;
     const prev = out[out.length - 1];
     if (prev && prev.type === type) {
       prev.text += text;
@@ -66,14 +65,6 @@ function tokenizeWildcardPattern(pattern: string): WildcardToken[] {
         continue;
       }
       push('plain', '\\');
-      continue;
-    }
-    if (ch === '*') {
-      push('wildcard-many', '*');
-      continue;
-    }
-    if (ch === '?') {
-      push('wildcard-single', '?');
       continue;
     }
     const prev = out[out.length - 1];

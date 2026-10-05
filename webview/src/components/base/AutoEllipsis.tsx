@@ -34,8 +34,7 @@ export const AutoEllipsis = memo(function AutoEllipsis(props: AutoEllipsisProps)
 
   useEffect(() => {
     updateOverflowState();
-    const el = textRef.current;
-    if (!el) return;
+    const el = textRef.current!;
     if (typeof ResizeObserver !== 'undefined') {
       const observer = new ResizeObserver(() => updateOverflowState());
       observer.observe(el);

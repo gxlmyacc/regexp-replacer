@@ -156,18 +156,11 @@ export function scanUnnecessaryEscapeRanges(text: string): UnnecessaryEscapeRang
   const s = String(text ?? '');
   const out: UnnecessaryEscapeRange[] = [];
   let i = 0;
-  let escaped = false;
   let inCharClass = false;
   let charClassOpenOffset = -1;
 
   while (i < s.length) {
     const ch = s[i];
-    if (escaped) {
-      escaped = false;
-      i += 1;
-      continue;
-    }
-
     if (ch === '\\') {
       const { unnecessary, advance, hint } = analyzeAfterBackslash(s, i, inCharClass);
       if (unnecessary && advance >= 2) {

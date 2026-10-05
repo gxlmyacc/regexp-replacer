@@ -25,12 +25,12 @@ function loadMocha(): typeof import('mocha') {
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require('mocha') as typeof import('mocha');
   } catch {
     // dist/test-vscode/test/vscode/suite -> repoRoot/node_modules/mocha
     const abs = path.join(repoRoot, 'node_modules', 'mocha');
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require(abs) as typeof import('mocha');
   }
 }

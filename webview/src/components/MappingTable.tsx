@@ -135,7 +135,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
     const out: MapReplaceItem[] = [];
     for (const r of list) {
       if (!r.find) continue;
-      out.push({ find: r.find, replace: r.replace ?? '' });
+      out.push({ find: r.find, replace: r.replace });
     }
     return out;
   }
@@ -159,12 +159,12 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
       Toast.show(t.duplicateKey, 'error');
       return false;
     }
-    const hasEmpty = list.some((r) => !String(r.find ?? '').trim());
+    const hasEmpty = list.some((r) => !r.find.trim());
     if (hasEmpty) {
       setEmptyMatchWarnUids((prev) => {
         const next = new Set(prev);
         for (const r of list) {
-          if (!String(r.find ?? '').trim()) next.add(r.uid);
+          if (!r.find.trim()) next.add(r.uid);
         }
         return next;
       });
@@ -197,7 +197,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
       const next = new Set<string>();
       for (const uid of prev) {
         const row = list.find((x) => x.uid === uid);
-        if (row && !String(row.find ?? '').trim()) next.add(uid);
+        if (row && !row.find.trim()) next.add(uid);
       }
       return next.size === prev.size && [...prev].every((u) => next.has(u)) ? prev : next;
     });
@@ -274,7 +274,6 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
    */
   function moveRow(fromIdx: number, toIdx: number): void {
     setRows((prev) => {
-      if (fromIdx === toIdx) return prev;
       if (fromIdx < 0 || fromIdx >= prev.length) return prev;
       if (toIdx < 0 || toIdx >= prev.length) return prev;
       const next = [...prev];
@@ -353,7 +352,7 @@ export const MappingTable = memo(function MappingTable(props: MappingTableProps)
       <div className="rrMappingTableBody">
         {rows.map((r, idx) => {
           const hasDup = r.find ? errorFinds.has(r.find) : false;
-          const emptyFind = !String(r.find ?? '').trim();
+          const emptyFind = !r.find.trim();
           const showEmptyErr = emptyFind && emptyMatchWarnUids.has(r.uid);
           const hasErr = hasDup || showEmptyErr;
           return (

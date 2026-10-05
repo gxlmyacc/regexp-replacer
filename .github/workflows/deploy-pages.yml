@@ -24,8 +24,8 @@ jobs:
         run: npm install --global yarn@1.22.22
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-      - name: Test browser storage and seed loading
-        run: yarn test:webview test/webview/vscodeApi.test.ts test/webview/devSeedRelocale.test.ts
+      - name: Test runtime coverage
+        run: yarn coverage
       - name: Build website
         run: yarn build:site
       - uses: actions/upload-pages-artifact@v4

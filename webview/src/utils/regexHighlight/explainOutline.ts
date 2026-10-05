@@ -35,8 +35,6 @@ function lexerTokenTypeLabel(type: string, t: I18nMessages): string {
       return t.explainRegexTokAnchor;
     case 'dot':
       return t.explainRegexTokDot;
-    case 'text':
-      return t.explainRegexTokText;
     default:
       return type;
   }

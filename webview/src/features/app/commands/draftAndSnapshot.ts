@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import type { ReplaceCommand, ReplaceRule } from '../../../../../../src/types';
+import type { ReplaceCommand, ReplaceRule } from '../../../../../src/types';
 import { isUntitledCommandTitle } from '../../../utils';
 
 export type ResetComputationInput = {
@@ -78,7 +78,7 @@ export function computeResetToSaved(input: ResetComputationInput): ResetComputat
       ? currentCommands.find((c) => c.id === prevSelectedId)
       : currentCommands.find((c) => isUntitledCommandTitle(c.title));
 
-    restoredUntitledDraft = currentUntitledCmd
+    restoredUntitledDraft = currentUntitledCmd && isUntitledCommandTitle(currentUntitledCmd.title)
       ? {
           ...currentUntitledCmd,
           title: untitledTitle,

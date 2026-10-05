@@ -9,7 +9,7 @@ import {
   stripHookIdFromCommands,
   stripHookIdFromReferrerEntries,
 } from '../../hooks/hookReferrers';
-import { createDraftCommand, createDefaultRule, isUntitledCommandTitle } from '../../../utils';
+import { createDraftCommand } from '../../../utils';
 
 export type ModalApi = {
   /**
@@ -114,7 +114,6 @@ export function useAppModals(deps: UseAppModalsDeps): {
     selectedRuleIndex,
     setCommands,
     setDirty,
-    setSelectedRuleIndex,
     pendingAutoSelectIdRef,
     scheduleAutoSaveAfterDelete,
     requestSaveFrom,

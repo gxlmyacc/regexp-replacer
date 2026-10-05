@@ -19,29 +19,22 @@ export function walkAstForExplain(
   t: I18nMessages,
   pushSegment: (text: string) => void,
 ): void {
-  const keySeen = new Set<string>();
-  const pushUnique = (key: string, text: string) => {
-    if (keySeen.has(key)) return;
-    keySeen.add(key);
-    pushSegment(text);
-  };
-
   visitRegExpAST(astRoot, {
     onCapturingGroupEnter(node) {
       const snip = truncatePatternSnippet(source, node.start, node.end, 36);
-      pushUnique(`cap-${node.start}`, formatMessageTemplate(t.explainRegexOutlineCapturingFmt, { snippet: snip }));
+      pushSegment(formatMessageTemplate(t.explainRegexOutlineCapturingFmt, { snippet: snip }));
     },
     onGroupEnter(node) {
       const snip = truncatePatternSnippet(source, node.start, node.end, 36);
-      pushUnique(`grp-${node.start}`, formatMessageTemplate(t.explainRegexOutlineGroupFmt, { snippet: snip }));
+      pushSegment(formatMessageTemplate(t.explainRegexOutlineGroupFmt, { snippet: snip }));
     },
     onAssertionEnter(node) {
       const snip = truncatePatternSnippet(source, node.start, node.end, 40);
-      pushUnique(`as-${node.start}`, formatMessageTemplate(t.explainRegexOutlineAssertionFmt, { snippet: snip }));
+      pushSegment(formatMessageTemplate(t.explainRegexOutlineAssertionFmt, { snippet: snip }));
     },
     onCharacterClassEnter(node) {
       const snip = truncatePatternSnippet(source, node.start, node.end, 32);
-      pushUnique(`cc-${node.start}`, formatMessageTemplate(t.explainRegexOutlineCharClassFmt, { snippet: snip }));
+      pushSegment(formatMessageTemplate(t.explainRegexOutlineCharClassFmt, { snippet: snip }));
     },
   });
 }

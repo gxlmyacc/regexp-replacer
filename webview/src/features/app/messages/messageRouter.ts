@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { ReplaceCommand } from '../../../../../../src/types';
+import type { ReplaceCommand } from '../../../../../src/types';
 import type { WebviewResponse } from '../../../bridge/vscodeApi';
 import type { LanguageCode } from '../../../i18n';
 import { normalizeCommandTitles, sanitizeCommandsPayload, isPristineUntitledDraft, isUntitledCommandTitle } from '../../../utils';

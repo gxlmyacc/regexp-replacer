@@ -45,7 +45,6 @@ export const Popover = memo(function Popover(props: PopoverProps): React.ReactEl
   useEffect(() => {
     const popoverEl = popoverRef.current;
     if (!open || !referenceEl || !popoverEl) return;
-    popperRef.current?.destroy();
     popperRef.current = createPopper(referenceEl, popoverEl, {
       placement,
       strategy,
